@@ -1,3 +1,4 @@
+from Theme import *
 from graphicInterpretor import *
 from programm import *
 
@@ -17,6 +18,8 @@ class Main():
         self.fen.bind('<Key>', self.keyboardEvents)
 
         self.programms = [] #Contient des objets Grille
+        self.programmNames = []
+        self.lastLaunchedProgrammIndex = 0
 
         self.canQuit = True
         self.lastCode = None
@@ -27,6 +30,9 @@ class Main():
         self.fen.mainloop()
 
     def launch(self):
+        if (len(self.programms) <= 1):
+            return
+        
         #On réinitialise les outputs et les stacks
         for prog in range(len(self.programms) - 1):
             self.programms[prog].setStack(Pile())
@@ -48,6 +54,12 @@ class Main():
         print("Output:")
         i.output.affiche_output()
 
+    def rename(self, n):
+        self.programms[self.lastLaunchedProgrammIndex].name = n
+        self.can.itemconfigure(self.programmNames[self.lastLaunchedProgrammIndex],
+                               text = n)
+        self.can.update()
+
     def getInterpretor(self, event):
         codesZone = self.zone2.underZones[0]
         x, y = event.x, event.y
@@ -58,8 +70,12 @@ class Main():
 
         self.canQuit = False
 
+        self.lastLaunchedProgrammIndex = indice
         i = GraphicalInterpretor(main = self, grille = self.programms[indice].getGrid(),
                                  ptc = indice)
+
+        self.programms[indice].name = i.programmName
+
 
     def menu(self):
         pass
@@ -70,12 +86,27 @@ class Main():
         self.can.pack(side = tk.LEFT)
 
 
-        self.zone1 = Zone((0, 0), (self.size1, self.pay*4), "#CAE617")
+        self.zone1 = Zone((0, 0), (self.size1, self.pay*4), COLOR1)
         self.zone2 = Zone((0, self.zone1.getEndY()),
-                          (self.size1, self.size2 - self.zone1.getEndY()), "#71E3BC")
+                          (self.size1, self.size2 - self.zone1.getEndY()), COLOR2)
 
         #Zone 1:
         #* Bouton quitter
+
+        #Fond d'écran
+        rapport = max(self.zone1.getSizeX(), self.zone1.getSizeY())/min(self.zone1.getSizeX(), self.zone1.getSizeY())
+
+        p2 = 10
+        p1 = int(p2*rapport)
+
+        for i in range(p1):
+            for j in range(p2):
+                self.zone1.addZone(
+                    Zone((self.zone1.getX() + self.zone1.getSizeX()/p1*i,
+                          self.zone1.getY() + self.zone1.getSizeY()/p2*j),
+                    (self.zone1.getSizeX()/p1, self.zone1.getSizeY()/p2),
+                    color = SET1[randint(0, len(SET1) - 1)]))
+        
 
         #Bouton quitter
         quitButton = TouchableZone((0, 0),
@@ -86,7 +117,7 @@ class Main():
 
         presentationZone = Zone((self.zone1.getCenter()[0]/2, self.zone1.getCenter()[1]/2),
                                 (self.zone1.getSizeX()/2, self.zone1.getSizeY()/2),
-                                color = "#37E66F")
+                                color = COLOR3)
         
         self.zone1.addZone(quitButton)
         self.zone1.addZone(presentationZone)        
@@ -94,9 +125,9 @@ class Main():
 
         #Zone 2:
         #* Zone avec les programmes
-        zoneCodes = Zone((self.zone2.getPax()*2, self.zone2.getPay()*1),
-                         (self.zone2.getPax()*6, self.zone2.getPay()*8),
-                         "#A4E371")
+        zoneCodes = Zone((self.zone2.getPax()*2, self.zone2.getPay()*0.5),
+                         (self.zone2.getPax()*6, self.zone2.getPay()*9),
+                         COLOR4)
         self.zone2.addZone(zoneCodes)
 
         self.colorZone(self.zone1)
@@ -125,6 +156,7 @@ class Main():
                              text = "***  La led du dessous sert à enregistrer l'output  ***",
                              font = ('Georgia 15 bold'),
                              tags = "stackValue")
+        
 
         #Zone 2: first programm
         self.addProgZone()
@@ -185,7 +217,13 @@ class Main():
         self.can.tag_bind(f2, "<Button-1>",
                           lambda c : lastProgramm.changeOutputState(self.can))
 
-
+        if (len(self.programms) > 0):
+            cz = progZone.underZones[-1]
+            self.programmNames.append(
+                self.can.create_text(cz.getCenter()[0], cz.getEndY() + cz.getPay()*1.2,
+                            text = self.programms[-1].name,
+                            font = ('Georgia 7 bold'),
+                            tags = "stackValue"))
 
     def majCodeZone(self):
         indexProgramm = self.lastCode

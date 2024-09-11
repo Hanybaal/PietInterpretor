@@ -11,6 +11,7 @@ class Programm():
         self.shareOutput = False
         self.fireStack = None
         self.fireOutput = None
+        self.name = "Unamed"
 
     #Guetteurs
     def getStack(self):
@@ -40,7 +41,6 @@ class Programm():
         self.stack = Pile()
         self.stack.pile = list(stack.pile)
         self.stack.hauteur = stack.hauteur
-
 
     def blankInit(self):
         self.setGrid(Grille(5, 5))

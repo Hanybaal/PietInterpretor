@@ -1,3 +1,4 @@
+from Theme import *
 from interpreteur import *
 from Zone import *
 from ZoneGraphism import *
@@ -15,6 +16,7 @@ class GraphicalInterpretor(InterpreteurPiet):
         super().__init__(grille)
 
         self.main = main
+        self.programmName = "Unamed"
         self.programmeToChange = ptc
 
         usr32 = ctypes.windll.user32
@@ -149,13 +151,13 @@ class GraphicalInterpretor(InterpreteurPiet):
         #Zone 1:
         #* Widgets pour dessiner
         #* Tableau des commandes
-        self.zone1 = Zone((0, 0), (8*self.pax, 3*self.pay), "#CEA1E3")
+        self.zone1 = Zone((0, 0), (8*self.pax, 3*self.pay), COLOR5)
 
         #Bouton quitter
         if self.main == None:
             quitButton = TouchableZone((0, 0),
                                    (self.zone1.getPax()/4, self.zone1.getPax()/4),
-                                   "E66793",
+                                   COLOR6,
                                    command = self.quit,
                                    tags = "quit")
 
@@ -173,7 +175,7 @@ class GraphicalInterpretor(InterpreteurPiet):
             drawingWidgets.addZone(TouchableZone((i*drawingWidgets.getSizeX()/nbWidgets, 0),
                                                  (drawingWidgets.getSizeX()/nbWidgets,
                                                   drawingWidgets.getSizeY()),
-                                                  "#DB51D7", command = self.chosenWidget,
+                                                  COLOR7, command = self.chosenWidget,
                                                   tags = "widget"))
 
         self.zone1.addZone(drawingWidgets)
@@ -217,7 +219,7 @@ class GraphicalInterpretor(InterpreteurPiet):
         #Zone 2:
         #* Code
         self.zone2 = Zone((0, self.zone1.getEndY()),
-                          (8*self.pax, self.size2 - self.zone1.getEndY()), "#8047E6")
+                          (8*self.pax, self.size2 - self.zone1.getEndY()), COLOR8)
 
         #Zone de code
         ox = self.zone2.getPax()
@@ -243,7 +245,7 @@ class GraphicalInterpretor(InterpreteurPiet):
 
         #Stack
         stackZone = Zone((0, 0),
-                         (self.zone3.getSizeX(), 6*self.zone3.getPay()), "#FFD0FF")
+                         (self.zone3.getSizeX(), 6*self.zone3.getPay()), COLOR9)
         self.zone3.addZone(stackZone)
 
         stack = Zone((stackZone.getSizeX()/4, 0),
@@ -266,14 +268,14 @@ class GraphicalInterpretor(InterpreteurPiet):
         #Input
         inputZone = Zone((0, stackZone.getSizeY()),
                          (self.zone3.getSizeX(), 1*self.zone3.getPay()),
-                         "#8AFFBA")
+                         COLOR10)
         self.zone3.addZone(inputZone)
 
 
         #Output
         outputZone = Zone((0, inputZone.getEndY()),
                     (self.zone3.getSizeX(), self.zone3.getSizeY() - inputZone.getEndY()),
-                          "#DB51D7")
+                          COLOR11)
         self.zone3.addZone(outputZone)
 
         outputZone.addZone(Zone((outputZone.getSizeX()/6, 2*outputZone.getPay()),
@@ -511,6 +513,9 @@ class GraphicalInterpretor(InterpreteurPiet):
 
                     fichier.write(chr(10))
 
+        self.programmName = os.path.basename(fichier_destination)[:-4] #txt en moins
+        self.main.rename(self.programmName)
+
 
     def _import(self):
         # Demander à l'utilisateur de choisir un fichier à importer
@@ -519,6 +524,9 @@ class GraphicalInterpretor(InterpreteurPiet):
 
         # Lire les données du fichier sélectionné (ici un exemple de lecture)
         if fichier_source:
+            self.programmName = os.path.basename(fichier_source)[:-4] #txt en moins
+            self.main.rename(self.programmName)
+            
             fichier = open(fichier_source, "r")
             t = fichier.readlines()
             for c in range(len(t)):
