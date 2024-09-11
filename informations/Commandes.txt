@@ -1,0 +1,18 @@
+greater:      2 pop
+duplicate:    0 pop
+roll:         2 pop
+inInt:        0 pop
+inChar:       0 pop
+no:           replace 0-1
+mod:          2 pop
+divide:       2 pop
+multiply:     2 pop
+substract:    2 pop
+add:          2 pop
+
+(pour les opérations, c'est val1 op val2)
+
+pop:          1 pop
+push:         0 pop
+pointer:      1 pop
+switch:       1 pop
