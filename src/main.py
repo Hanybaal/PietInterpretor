@@ -138,21 +138,21 @@ class Main():
         ZoneGraphism.quitCross(self.can, quitButton)
         self.can.create_text(presentationZone.getX() + presentationZone.getSizeX()/2,
                              presentationZone.getY() + presentationZone.getPay()/2 +
-                             presentationZone.getPay()/10,
+                             presentationZone.getPay(),
                              text = "Bienvenue au compilateur Piet!!",
                              font = ('Georgia 15 bold'),
                              tags = "stackValue")
 
         self.can.create_text(presentationZone.getX() + presentationZone.getSizeX()/2,
                              presentationZone.getY() + presentationZone.getPay()/2 +
-                             presentationZone.getPay()*3,
+                             presentationZone.getPay()*4,
                              text = "***  La led du dessus sert à enregistrer le stack  ***",
                              font = ('Georgia 15 bold'),
                              tags = "stackValue")
 
         self.can.create_text(presentationZone.getX() + presentationZone.getSizeX()/2,
                              presentationZone.getY() + presentationZone.getPay()/2 +
-                             presentationZone.getPay()*5,
+                             presentationZone.getPay()*6,
                              text = "***  La led du dessous sert à enregistrer l'output  ***",
                              font = ('Georgia 15 bold'),
                              tags = "stackValue")

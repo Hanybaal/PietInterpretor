@@ -53,7 +53,7 @@ class ZoneGraphism():
                            fill = "firebrick1", outline = "black",
                            tags = "start")
 
-    def arrow(can, zone, direction):
+    def arrow(can, zone, direction, tags = "codelPointer"):
         cx, cy, px, py, x, y, ex, ey = ZoneGraphism.dataExtraction(zone)
         dx, dy = direction[0], direction[1]
 
@@ -66,7 +66,7 @@ class ZoneGraphism():
                                cx + px*dx, cy + py,
                                cx + px*dx, cy + py/2,
                                cx - 2*px*dx, cy + py/2,
-                               fill = "DarkOrange1", tags = "codelPointer",
+                               fill = "DarkOrange1", tags = tags,
                                outline = "black", width = 1)
 
         else:
@@ -77,7 +77,7 @@ class ZoneGraphism():
                                cx + px, cy + py*dy,
                                cx + px/2, cy + py*dy,
                                cx + px/2, cy - 2*py*dy,
-                               fill = "DarkOrange1", tags = "codelPointer",
+                               fill = "DarkOrange1", tags = tags,
                                outline = "black", width = 1)
 
     def reset(can, zone):
@@ -97,11 +97,22 @@ class ZoneGraphism():
     def stop(can, zone):
         cx, cy, px, py, x, y, ex, ey = ZoneGraphism.dataExtraction(zone)
         coef = 3
-
-        can.create_rectangle(x + coef*px, y + coef*py,
-                             ex - coef*px, ey - coef*py,
-                             fill = "#FF0000", outline = "#000000",
-                             tags = "stop")
+        
+        can.create_polygon(cx, cy - coef*py,
+                           cx + coef*px, cy + coef*py,
+                           cx - coef*px, cy + coef*py,
+                           fill = "#FF0000", outline = "#000000",
+                           tags = "stop")
+        
+        can.create_line(cx, cy - coef*py/3,
+                        cx, cy + coef*py/4,
+                        fill = "#000000", width = 2,
+                        tags = "stop")
+        
+        can.create_oval(cx - py/2, cy + coef*py - py/2 - py,
+                        cx + py/2, cy + coef*py + py/2 - py,
+                        fill = "#000000",
+                        tags = "stop")
 
     def pause(can, zone):
         cx, cy, px, py, x, y, ex, ey = ZoneGraphism.dataExtraction(zone)

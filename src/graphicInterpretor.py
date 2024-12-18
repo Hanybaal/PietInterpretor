@@ -46,8 +46,11 @@ class GraphicalInterpretor(InterpreteurPiet):
         self.pause.set(0)
         self.speed = 1000
         self.respeed = None
+        self.firstLine = 0
         self.widgets()
+        self.majOutput()
 
+        #Nombre maximum de caractère par ligne dans l'output graphique
         self.fen.mainloop()
 
 
@@ -278,11 +281,30 @@ class GraphicalInterpretor(InterpreteurPiet):
                           COLOR11)
         self.zone3.addZone(outputZone)
 
+        ##Zone réelle de l'output
         outputZone.addZone(Zone((outputZone.getSizeX()/6, 2*outputZone.getPay()),
                                 (outputZone.getSizeX()*(4/6), 7*outputZone.getPay()),
                                 "white"))
 
+        #Ajout de la scrollbar
+        blankZone = outputZone.underZones[-1]
+        outputZone.addZone(Zone((blankZone.getEndX() - outputZone.getX(),
+                                 blankZone.getY() - outputZone.getY()),
+                                (blankZone.getPax(), blankZone.getSizeY()),
+                                "black"))
 
+        #Ajout des boutons de la scrollBar avec Bind
+        scroll = outputZone.underZones[-1]
+        scroll.addZone(TouchableZone((0, 0),
+                            (blankZone.getPax(), blankZone.getPax()),
+                            "white", tags = "scrollBarUp",
+                            command = lambda c : self.scroll(-1)))
+        
+        scroll.addZone(TouchableZone((0, blankZone.getSizeY() - blankZone.getPax()),
+                            (blankZone.getPax(), blankZone.getPax()),
+                             "white", tags = "scrollBarDown",
+                             command = lambda c : self.scroll(1)))      
+        
         self.colorZone(self.zone1)
         self.colorZone(self.zone2)
         self.colorZone(self.zone3)
@@ -392,11 +414,26 @@ class GraphicalInterpretor(InterpreteurPiet):
                              text = "Output", tags = "text",
                              font = ('Georgia 15 bold'))
 
-        oz = outputZone.underZones[-1]
+        oz = outputZone.underZones[-2]
         self.can.create_text(oz.getX() + oz.getPax(),
                              oz.getY() + oz.getPay(),
                              text = self.output.output, tags = ("output", "outputText"),
                              font = ('Georgia 10 bold'))
+
+        ZoneGraphism.arrow(self.can, outputZone.underZones[-1].underZones[0], (0, -1),
+                           "scrollBarUp")
+        ZoneGraphism.arrow(self.can, outputZone.underZones[-1].underZones[1], (0, 1),
+                           "scrollBarDown")        
+        
+
+    def scroll(self, direction):
+        #Si un des deux boutons de la scrollBar est pressé:
+        #*** Saute une ligne ou la remet dans l'output
+        self.firstLine += direction
+        if (self.firstLine < 0):
+            self.firstLine = 0
+            return
+        self.majOutput()
 
 
     def pauseMode(self):
@@ -450,31 +487,39 @@ class GraphicalInterpretor(InterpreteurPiet):
         ZoneGraphism.arrow(self.can, zone, self.dp.direction_actuelle())
 
 
-    def majOutput(self):
-        ##TODO: complete this function that works already quite well
+    def majOutput(self):        
         self.can.delete("outputText")
-        outputZone = self.zone3.underZones[2].underZones[-1]
+        nbl = len(self.output.lines)
+        if (self.firstLine >= nbl):
+            return
+        
+        outputZone = self.zone3.underZones[2].underZones[-2]
 
-        nbMaxCar = 10
+        nbLines = len(self.output.lines)
+        nbLinesForOutput = 10
+        if ((nbl - self.firstLine) < 10):
+            nbLinesForOutput = (nbl - self.firstLine)
+            if (nbLinesForOutput < 0):
+                nbLinesForOutput = 0
 
-        over = self.output.lineNumber(nbMaxCar) - nbMaxCar
-        over = 0 if (over < 0) else ceil(over/2)
+        elif (nbl < 10):
+            nbLinesForOutput = nbl
+
+        firstLine = self.firstLine
+            
+        nbCarPerLine = self.output.nbCarPerLine
         ncar = self.output.carNumber()
-        nbMaxCar += over
 
-        for i in range(nbMaxCar):
-            for j in range(nbMaxCar):
-                if ((i*nbMaxCar + j) > (ncar - 1)):
-                    return
-
-                addx = j*outputZone.getSizeX()/nbMaxCar
-                addy = i*outputZone.getSizeY()/nbMaxCar
+        for i in range(nbLinesForOutput):
+            addy = i*outputZone.getSizeY()/10
+            for j in range(nbCarPerLine):
+                addx = j*outputZone.getSizeX()/nbCarPerLine
                 self.can.create_text(
-                    outputZone.getX() + addx + outputZone.getSizeX()/nbMaxCar/2,
-                    outputZone.getY() + addy + outputZone.getSizeY()/nbMaxCar/2,
-                    text = self.output.output[i*nbMaxCar + j],
+                    outputZone.getX() + addx + outputZone.getPax()/2,
+                    outputZone.getY() + addy + outputZone.getPay()/2,
+                    text = self.output.lines[firstLine + i][j],
                     tags = "outputText",
-                    font = 'Georgia ' + str(16 - over) + ' bold')
+                    font = 'Georgia 15 bold')
 
     def majStack(self):
         self.can.delete("stackValue")
