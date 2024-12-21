@@ -164,7 +164,18 @@ class Main():
         self.launchButton = tk.Button(self.fen, text = "Lancer", command = self.launch)
         self.launchButton.place(x = presentationZone.getX() + presentationZone.getSizeX()/2,
                                 y = presentationZone.getEndY() + presentationZone.getPay())
-       
+
+##       #Zone 2: change the theme color
+##        self.changeTheme = tk.Scale(self.fen, from_ = 1, to = 255,
+##                                orient=tk.HORIZONTAL,
+##                                command = self.darkerTheme)
+##
+##        self.changeTheme.place(x = self.zone1.getX(),
+##                           y = self.zone1.getEndY() - self.zone1.getPay()*2)
+
+    def darkerTheme(self, event):
+        print(self.changeTheme.get())
+        
 
     def addProgZone(self, event = None):
         nbProgrammsPerLine = 8

@@ -1,6 +1,17 @@
 
 
 class Couleur():
+    #Fonctions non rapportées aux couleurs de l'interpréteur
+    def getRGBFromHexa(hexa : str):
+        return tuple(int(hexa[i:i+2], 16) for i in (1, 3, 5))
+
+    def getDarkerRGB(rgb : tuple, d : int):
+        return tuple(0 if ((t + d) < 0) else 255 if ((t + d) > 255) else (t + d) for t in rgb)
+
+    def getHexaFromRGB(rgb : tuple):
+        return ('{:02X}' * 3).format(r, g, b)
+
+    #Fonctions liées à l'interpréteur en lui-même
     def notACouleur(couleur):
         return ((couleur.getCouleur() < 0) and (couleur.getLuminosite() < 0))
 
@@ -60,6 +71,3 @@ class Couleur():
 
     def isWhite(self):
         return (self.getCouleur() == 7)
-
-
-        
