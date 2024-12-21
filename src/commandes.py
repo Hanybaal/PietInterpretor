@@ -20,7 +20,11 @@ class Commandes():
 
     def outChar(self):
         v = self.stack.pop()
-        self.output.outChar(v)
+        if (v.isnumeric()):
+            self.output.outChar(v)
+
+        else:
+            self.output.outCharStr(v)
 
     def switch(self, v):
         self.cc.switch(v)

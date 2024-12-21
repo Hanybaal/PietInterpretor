@@ -49,6 +49,9 @@ class OutPut():
     def outChar(self, v : int):
         self.stack(chr(v))
 
+    def outCharStr(self, v : str):
+        self.stack(v)
+
     def outNum(self, v : int):
         self.stack(v)
 
