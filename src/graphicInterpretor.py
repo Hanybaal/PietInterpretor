@@ -57,6 +57,9 @@ class GraphicalInterpretor(InterpreteurPiet):
 
     def lecture(self, grille, codel, nbEchecs = 0):
         if ((self.mode == "reset") or (self.mode == "stop")):
+            self.output.reinit()
+            self.majOutput()
+            self.mode = "normal"
             return
 
         if (self.mode == "pause"):
@@ -273,6 +276,15 @@ class GraphicalInterpretor(InterpreteurPiet):
                          (self.zone3.getSizeX(), 1*self.zone3.getPay()),
                          COLOR10)
         self.zone3.addZone(inputZone)
+        validZone = TouchableZone((inputZone.getSizeX()/2 + inputZone.getPax()/2,
+                                  5*inputZone.getPay()),
+                                  (inputZone.getPax()*2,
+                                  inputZone.getPay()*2),
+                                  "white",
+                                   tags = "validZone",
+                                   command = self.validInput)
+        inputZone.addZone(validZone)
+        #self.can.tag_bind("validZone", "<Button-1>", self.validInput)
 
 
         #Output
@@ -353,7 +365,7 @@ class GraphicalInterpretor(InterpreteurPiet):
                              text = "Widgets", font = ('Georgia 15'))
 
         #Zone 1: speed
-        self.respeed = tk.Scale(self.fen, from_ = 10, to = 1000,
+        self.respeed = tk.Scale(self.fen, from_ = 1, to = 1000,
                                 orient=tk.HORIZONTAL,
                                 command = self.newSpeed)
 
@@ -401,10 +413,16 @@ class GraphicalInterpretor(InterpreteurPiet):
         self.inp.place(x = inputZone.getX() + inputZone.getSizeX()/2 - 15,
                        y = inputZone.getEndY() - 5*inputZone.getPay())
 
-        self.validInp = tk.Button(self.fen, text = "Valider", command = self.validInput)
-        self.validInp.place(x = inputZone.getX() + inputZone.getSizeX()/2 + 15,
-                              y = inputZone.getEndY() - 5*inputZone.getPay())
+##        self.validInp = tk.Button(self.fen, text = "Valider", command = self.validInput)
+##        self.validInp.place(x = inputZone.getX() + inputZone.getSizeX()/2 + 15,
+##                              y = inputZone.getEndY() - 5*inputZone.getPay())
+##
 
+        self.can.create_text(validZone.getX() + validZone.getSizeX()/2,
+                             validZone.getY() + validZone.getSizeY()/2,
+                             text = "Valider",
+                             tags = "validZone",
+                             font = ('Georgia 10'))
         self.fen.bind("<Return>", self.validInput)
 
 
@@ -559,8 +577,16 @@ class GraphicalInterpretor(InterpreteurPiet):
                     fichier.write(chr(10))
 
         self.programmName = os.path.basename(fichier_destination)[:-4] #txt en moins
-        self.main.rename(self.programmName)
 
+        if (self.main != None):
+            self.main.rename(self.programmName)
+
+    def countMinus(self, txt):
+        s = 0
+        for i in range(len(txt)):
+            if (txt[i] == '-'):
+                s += 1
+        return s
 
     def _import(self):
         # Demander à l'utilisateur de choisir un fichier à importer
@@ -570,7 +596,9 @@ class GraphicalInterpretor(InterpreteurPiet):
         # Lire les données du fichier sélectionné (ici un exemple de lecture)
         if fichier_source:
             self.programmName = os.path.basename(fichier_source)[:-4] #txt en moins
-            self.main.rename(self.programmName)
+
+            if (self.main != None):
+                self.main.rename(self.programmName)
             
             fichier = open(fichier_source, "r")
             t = fichier.readlines()
@@ -578,13 +606,29 @@ class GraphicalInterpretor(InterpreteurPiet):
                 t[c] = t[c][:-1]
 
             x = len(t[-1])//2
+            if ('-' in t[-1]):
+                s = self.countMinus(t[-1])
+                x = (len(t[-1]) - s)//2
+
             y = len(t)
             g = Grille(x, y)
+            nbMoins = 0
             for ligne in range(len(g.grille)):
+                nbMoins = 0
                 for colonne in range(len(g.grille[ligne])):
-                    g.grille[ligne][colonne] = Cellule(Couleur(int(t[ligne][colonne*2]),
-                                                               int(t[ligne][colonne*2+1])),
+                    w1 = t[ligne][colonne*2 + nbMoins]
+                    if (w1 == '-'):
+                        w1 = t[ligne][colonne*2 + nbMoins] + t[ligne][colonne*2 + nbMoins + 1]
+                        nbMoins += 1
+
+                    w2 = t[ligne][colonne*2 + nbMoins + 1]
+                    if (w2 == '-'):
+                        w2 = t[ligne][colonne*2 + nbMoins + 1] + t[ligne][colonne*2 + nbMoins + 2]
+                        nbMoins += 1
+                        
+                    g.grille[ligne][colonne] = Cellule(Couleur(int(w1), int(w2)),
                                                                colonne, ligne)
+                    
 
             for ligne in range(len(g.grille)):
                 for colonne in range(len(g.grille[ligne])):

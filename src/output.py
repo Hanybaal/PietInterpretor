@@ -13,15 +13,17 @@ class OutPut():
 
     def stack(self, v):            
         self.output += str(v)
+        self.cursor += len(str(v))
 
         #Mise à jour des lignes pour l'interface graphique
-        if ((self.cursor == self.nbCarPerLine) or (self.output[-1] == chr(10))):
+        if ((self.cursor >= self.nbCarPerLine) or (self.output[-1] == chr(10))):
             self.lines.append(" "*self.nbCarPerLine)
             self.cursor = 0         
 
         if (self.output[-1] != chr(10)):
             self.lines[-1] = self.lines[-1][:self.cursor] + str(v) + self.lines[-1][self.cursor+1:]
-            self.cursor += 1
+            if (self.cursor == 0):
+                self.cursor += len(str(v))
         
         #Réinitialisation de l'output
         self.reset_output()
@@ -39,6 +41,8 @@ class OutPut():
 
     def reinit(self):
         self.output = ""
+        self.lines = [" "*self.nbCarPerLine]
+        self.cursor = 0
 
     def reset_output(self):
         pass
