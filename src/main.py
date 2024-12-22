@@ -146,14 +146,14 @@ class Main():
         self.can.create_text(presentationZone.getX() + presentationZone.getSizeX()/2,
                              presentationZone.getY() + presentationZone.getPay()/2 +
                              presentationZone.getPay()*4,
-                             text = "***  La led du dessus sert à enregistrer le stack  ***",
+                             text = "***  La led du dessus sert à partager le stack  ***",
                              font = ('Georgia 15 bold'),
                              tags = "stackValue")
 
         self.can.create_text(presentationZone.getX() + presentationZone.getSizeX()/2,
                              presentationZone.getY() + presentationZone.getPay()/2 +
                              presentationZone.getPay()*6,
-                             text = "***  La led du dessous sert à enregistrer l'output  ***",
+                             text = "***  La led du dessous sert à partager l'output  ***",
                              font = ('Georgia 15 bold'),
                              tags = "stackValue")
         
