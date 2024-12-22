@@ -414,15 +414,18 @@ class GraphicalInterpretor(InterpreteurPiet):
         for i in range(len(codeZoneExtr)):
             self.can.create_line(codeZoneExtr[i][0], codeZoneExtr[i][1],
                                  zone2Extr[i][0], zone2Extr[i][1],
-                                 fill = c, width = w)
+                                 fill = c, width = w,
+                                 tags = "codeZone")
             
             self.can.create_line(codeZoneExtr[(i+1)%scze][0], codeZoneExtr[(i+1)%scze][1],
                                  zone2Extr[i][0], zone2Extr[i][1],
-                                 fill = c, width = w)
+                                 fill = c, width = w,
+                                 tags = "codeZone")
 
             self.can.create_line(codeZoneExtr[(i-1)%scze][0], codeZoneExtr[(i-1)%scze][1],
                                  zone2Extr[i][0], zone2Extr[i][1],
-                                 fill = c, width = w)
+                                 fill = c, width = w,
+                                 tags = "codeZone")
  
 
         #Zone 3: Stack
@@ -732,6 +735,39 @@ class GraphicalInterpretor(InterpreteurPiet):
         self.codeZone.underZones = []
         self.makeCodeZone(self.codeZone)
         self.colorZone(self.zone2)
+
+        codeZone = self.codeZone
+
+        ########## décorations ##########
+        codeZoneExtr = [(codeZone.getX(), codeZone.getY()),
+                        (codeZone.getEndX(), codeZone.getY()),
+                        (codeZone.getEndX(), codeZone.getEndY()),
+                        (codeZone.getX(), codeZone.getEndY())]
+        
+        zone2Extr = [(self.zone2.getX(), self.zone2.getY()),
+                     (self.zone2.getEndX(), self.zone2.getY()),
+                     (self.zone2.getEndX(), self.zone2.getEndY()),
+                     (self.zone2.getX(), self.zone2.getEndY())]
+
+        scze = len(codeZoneExtr)
+        w = 2
+        c = "black"
+        for i in range(len(codeZoneExtr)):
+            self.can.create_line(codeZoneExtr[i][0], codeZoneExtr[i][1],
+                                 zone2Extr[i][0], zone2Extr[i][1],
+                                 fill = c, width = w,
+                                 tags = "codeZone")
+            
+            self.can.create_line(codeZoneExtr[(i+1)%scze][0], codeZoneExtr[(i+1)%scze][1],
+                                 zone2Extr[i][0], zone2Extr[i][1],
+                                 fill = c, width = w,
+                                 tags = "codeZone")
+
+            self.can.create_line(codeZoneExtr[(i-1)%scze][0], codeZoneExtr[(i-1)%scze][1],
+                                 zone2Extr[i][0], zone2Extr[i][1],
+                                 fill = c, width = w,
+                                 tags = "codeZone")
+        ################################################################################
 
         if (self.main != None):
             lc = self.main.lastCode
