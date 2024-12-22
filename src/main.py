@@ -51,10 +51,9 @@ class Main():
             self.programms[prog].setOutput(OutPut())
 
     def launch(self, index):
-        if ((len(self.programms) <= 1) or (index > len(self.programms) - 1)):
+        nbProg = (len(self.programms) - 1)
+        if ((nbProg == 0) or (index > nbProg)):
             return
-        
-
         
         i = None
 ##        for prog in range(len(self.programms) - 1):
@@ -67,9 +66,11 @@ class Main():
 ##            self.programms[prog].setOutput(i.output)
 
         i = GraphicalInterpretor(main = self, grille = self.programms[index].getGrid(),
-                                 ptc = index, launched = True)
-        self.programms[index].setStack(i.stack)
-        self.programms[index].setOutput(i.output)
+                                 ptc = index, launched = True,
+                                 isLast = (index == (nbProg - 1)),
+                                 stack = self.lastSharedStack(),
+                                 output = self.lastSharedOutput())
+
 
 ##        print("Rendu final:")
 ##        i.affichePile()
@@ -342,6 +343,8 @@ class Main():
                 o1 = actualProgramm.getOutput()
                 newOutput = OutPut()
                 newOutput.output = str(o1.output)
+                newOutput.lines = list(o1.lines)
+                newOutput.cursor = o1.cursor
                 return newOutput
             i -= 1
 

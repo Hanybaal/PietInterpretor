@@ -36,6 +36,8 @@ class Programm():
     def setOutput(self, output):
         self.output = OutPut()
         self.output.output = output.output
+        self.output.lines = list(output.lines)
+        self.output.cursor = output.cursor
 
     def setStack(self, stack):
         self.stack = Pile()

@@ -12,8 +12,9 @@ from tkinter import filedialog
 
 
 class GraphicalInterpretor(InterpreteurPiet):
-    def __init__(self, fen = None, main = None, grille = Grille(5, 5), ptc = 0, launched = False):
-        super().__init__(grille)
+    def __init__(self, fen = None, main = None, grille = Grille(5, 5), ptc = 0,
+                 launched = False, isLast = False, stack = Pile(), output = OutPut()):
+        super().__init__(grille, stack, output)
 
         self.main = main
         self.programmName = "Unamed"
@@ -51,7 +52,9 @@ class GraphicalInterpretor(InterpreteurPiet):
         self.majOutput()
 
         self.launched = launched
+        self.isLast = isLast
         if (launched):
+            self.speed = 1
             self.lecture(self.grille, self.grille.getCellule(0, 0))
 
         self.fen.mainloop()
@@ -135,7 +138,7 @@ class GraphicalInterpretor(InterpreteurPiet):
             nbEchecs = 0
 
         if self.maxEchecs(nbEchecs):
-            if (self.launched):
+            if (self.launched and (not self.isLast)):
                 self.quit()
             return
 
@@ -937,6 +940,8 @@ class GraphicalInterpretor(InterpreteurPiet):
 
             else:
                 self.fen.destroy()
+                self.main.programms[self.programmToChange].setStack(self.stack)
+                self.main.programms[self.programmToChange].setOutput(self.output)
                 self.main.launch(self.programmToChange + 1)
                 
 
