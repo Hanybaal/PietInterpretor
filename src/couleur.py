@@ -9,7 +9,7 @@ class Couleur():
         return tuple(0 if ((t + d) < 0) else 255 if ((t + d) > 255) else (t + d) for t in rgb)
 
     def getHexaFromRGB(rgb : tuple):
-        return ('{:02X}' * 3).format(r, g, b)
+        return ("#{:02x}{:02x}{:02x}").format(rgb[0], rgb[1], rgb[2])
 
     #Fonctions liées à l'interpréteur en lui-même
     def notACouleur(couleur):

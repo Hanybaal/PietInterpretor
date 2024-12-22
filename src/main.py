@@ -24,10 +24,25 @@ class Main():
         self.canQuit = True
         self.lastCode = None
 
+        self.colorables = []
+        self.theme = 2
         self.widgets()
         self.menu()
 
         self.fen.mainloop()
+
+    def changeTheme(self):
+        self.theme += 1
+        self.theme %= 5
+
+        #The mid theme is 2, and there is for now the themes 0, 1, 2, 3, 4
+        for obj in self.colorables:
+            rgb = Couleur.getRGBFromHexa(obj[1])
+            newColor = Couleur.getDarkerRGB(rgb, (2 - self.theme)*50)
+            obj[0].color = Couleur.getHexaFromRGB(newColor)
+            self.can.itemconfigure(obj[0].graphicZone, fill = obj[0].color)
+            
+        
 
     def launch(self):
         if (len(self.programms) <= 1):
@@ -90,6 +105,9 @@ class Main():
         self.zone2 = Zone((0, self.zone1.getEndY()),
                           (self.size1, self.size2 - self.zone1.getEndY()), COLOR2)
 
+        self.colorables.append((self.zone1, self.zone1.color))
+        self.colorables.append((self.zone2, self.zone2.color))
+
         #Zone 1:
         #* Bouton quitter
 
@@ -101,11 +119,13 @@ class Main():
 
         for i in range(p1):
             for j in range(p2):
-                self.zone1.addZone(
-                    Zone((self.zone1.getX() + self.zone1.getSizeX()/p1*i,
+                nz = Zone((self.zone1.getX() + self.zone1.getSizeX()/p1*i,
                           self.zone1.getY() + self.zone1.getSizeY()/p2*j),
                     (self.zone1.getSizeX()/p1, self.zone1.getSizeY()/p2),
-                    color = SET1[randint(0, len(SET1) - 1)]))
+                    color = SET1[randint(0, len(SET1) - 1)])
+
+                self.zone1.addZone(nz)
+                self.colorables.append((nz, nz.color))
         
 
         #Bouton quitter
@@ -118,6 +138,7 @@ class Main():
         presentationZone = Zone((self.zone1.getCenter()[0]/2, self.zone1.getCenter()[1]/2),
                                 (self.zone1.getSizeX()/2, self.zone1.getSizeY()/2),
                                 color = COLOR3)
+        self.colorables.append((presentationZone, presentationZone.color))
         
         self.zone1.addZone(quitButton)
         self.zone1.addZone(presentationZone)        
@@ -128,6 +149,7 @@ class Main():
         zoneCodes = Zone((self.zone2.getPax()*2, self.zone2.getPay()*0.5),
                          (self.zone2.getPax()*6, self.zone2.getPay()*9),
                          COLOR4)
+        self.colorables.append((zoneCodes, zoneCodes.color))
         self.zone2.addZone(zoneCodes)
 
         self.colorZone(self.zone1)
@@ -166,6 +188,10 @@ class Main():
                                 y = presentationZone.getEndY() + presentationZone.getPay())
 
 ##       #Zone 2: change the theme color
+        self.themeButton = tk.Button(self.fen, text = "Modifier le thème",
+                                     command = self.changeTheme)
+        self.themeButton.place(x = self.zone1.getX(),
+                           y = self.zone1.getEndY() - self.zone1.getPay()*2)
 ##        self.changeTheme = tk.Scale(self.fen, from_ = 1, to = 255,
 ##                                orient=tk.HORIZONTAL,
 ##                                command = self.darkerTheme)
@@ -324,7 +350,10 @@ class Main():
         # Changez la couleur de l'item sur lequel vous avez cliqué
         event.widget.itemconfigure(item_id, fill = newFill)
 
-    def colorZone(self, zone, bg = -1):
+    def colorZonesWithTheme(self, theme = 1):
+        coef = 25
+
+    def colorZone(self, zone, bg = -1, theme = 1):
         if (bg < 0):
             zone.creaZone(self.can)
 
