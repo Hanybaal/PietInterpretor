@@ -12,12 +12,12 @@ from tkinter import filedialog
 
 
 class GraphicalInterpretor(InterpreteurPiet):
-    def __init__(self, fen = None, main = None, grille = Grille(5, 5), ptc = 0):
+    def __init__(self, fen = None, main = None, grille = Grille(5, 5), ptc = 0, launched = False):
         super().__init__(grille)
 
         self.main = main
         self.programmName = "Unamed"
-        self.programmeToChange = ptc
+        self.programmToChange = ptc
 
         usr32 = ctypes.windll.user32
         self.size1 = usr32.GetSystemMetrics(0)
@@ -50,7 +50,10 @@ class GraphicalInterpretor(InterpreteurPiet):
         self.widgets()
         self.majOutput()
 
-        #Nombre maximum de caractère par ligne dans l'output graphique
+        self.launched = launched
+        if (launched):
+            self.lecture(self.grille, self.grille.getCellule(0, 0))
+
         self.fen.mainloop()
 
 
@@ -132,6 +135,8 @@ class GraphicalInterpretor(InterpreteurPiet):
             nbEchecs = 0
 
         if self.maxEchecs(nbEchecs):
+            if (self.launched):
+                self.quit()
             return
 
         #On modifie le tableau pour pouvoir interpréter la prochaine couleur
@@ -708,6 +713,7 @@ class GraphicalInterpretor(InterpreteurPiet):
 
 
     def reinit(self):
+        self.programmName = "Unamed"
         self.allBlocks = []
         self.mode = "single"
         self.actualColor = Couleur(7, 0)
@@ -922,9 +928,17 @@ class GraphicalInterpretor(InterpreteurPiet):
     def quit(self, event = None):
         if (self.main != None):
             self.main.canQuit = True
-            self.main.programms[self.programmeToChange].setGrid(self.grille)
-            self.main.majCodeZone()
-        self.fen.destroy()
+
+            if not self.launched:
+                self.main.programms[self.programmToChange].setGrid(self.grille)
+                self.main.majCodeZone()
+                self.fen.destroy()
+
+
+            else:
+                self.fen.destroy()
+                self.main.launch(self.programmToChange + 1)
+                
 
 
 if __name__ == "__main__":

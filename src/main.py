@@ -42,32 +42,40 @@ class Main():
             obj[0].color = Couleur.getHexaFromRGB(newColor)
             self.can.itemconfigure(obj[0].graphicZone, fill = obj[0].color)
             
-        
 
-    def launch(self):
-        if (len(self.programms) <= 1):
-            return
-        
+    #Fonction à appeler avant le premier launch
+    def preLaunch(self):
         #On réinitialise les outputs et les stacks
         for prog in range(len(self.programms) - 1):
             self.programms[prog].setStack(Pile())
             self.programms[prog].setOutput(OutPut())
+
+    def launch(self, index):
+        if ((len(self.programms) <= 1) or (index > len(self.programms) - 1)):
+            return
+        
+
         
         i = None
-        for prog in range(len(self.programms) - 1):
-            i = InterpreteurPiet(grille = self.programms[prog].getGrid(),
-                             stack = self.lastSharedStack(),
-                             output = self.lastSharedOutput())
+##        for prog in range(len(self.programms) - 1):
+##            i = InterpreteurPiet(grille = self.programms[prog].getGrid(),
+##                             stack = self.lastSharedStack(),
+##                             output = self.lastSharedOutput())
+##
+##            i.lecture(i.grille, i.grille.getCellule(0, 0), 0, True)
+##            self.programms[prog].setStack(i.stack)
+##            self.programms[prog].setOutput(i.output)
 
-            i.lecture(i.grille, i.grille.getCellule(0, 0), 0, True)
-            self.programms[prog].setStack(i.stack)
-            self.programms[prog].setOutput(i.output)
+        i = GraphicalInterpretor(main = self, grille = self.programms[index].getGrid(),
+                                 ptc = index, launched = True)
+        self.programms[index].setStack(i.stack)
+        self.programms[index].setOutput(i.output)
 
-        print("Rendu final:")
-        i.affichePile()
-        print()
-        print("Output:")
-        i.output.affiche_output()
+##        print("Rendu final:")
+##        i.affichePile()
+##        print()
+##        print("Output:")
+##        i.output.affiche_output()
 
     def rename(self, n):
         self.programms[self.lastLaunchedProgrammIndex].name = n
@@ -183,7 +191,8 @@ class Main():
         #Zone 2: first programm
         self.addProgZone()
 
-        self.launchButton = tk.Button(self.fen, text = "Lancer", command = self.launch)
+        self.launchButton = tk.Button(self.fen, text = "Lancer",
+                                      command = lambda : self.launch(0))
         self.launchButton.place(x = presentationZone.getX() + presentationZone.getSizeX()/2,
                                 y = presentationZone.getEndY() + presentationZone.getPay())
 
