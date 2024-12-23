@@ -18,7 +18,13 @@ programme aura pour output d'entrée celui du programme 2, et pour stack
 en entrée celui du 1er programme.
 
 
-Prochaine mise à jour:
-Le bouton "Lancer" du programme main génèrera une fenêtre
-par programme lancé (cela permettra de suivre l'évolution du stack,
-de l'output, et d'avoir un input prêt à chaque fois).
+Prochain(e)s mises à jour / Patchs envisagé(e)s:
+- Faire des thèmes de couleur pour l'Interpréteur Graphique
+- Refactor du code (amélioration de la structure des classes,
+  remplacement du français par l'anglais, variables privées...)
+- Ajout de nouvelles couleurs qui seraient des programmes pré-codés
+- Arrêt complet du launch de programmes sur appuie du bouton "Stop"
+- Possibilité de faire des boucles conditionnelles dans le launge / 
+  des branchements entre programmes
+- Adapter la taille des textes & remplacer tous les boutons tkinter
+  par des boutons à taille adaptative à la taille de l'écran
