@@ -1,12 +1,12 @@
 from math import *
 
-class ZoneGraphism():
+class GraphicZone():
     def dataExtraction(zone):
         return (zone.getCenter()[0], zone.getCenter()[1], zone.getPax(),
                 zone.getPay(), zone.getX(), zone.getY(), zone.getEndX(), zone.getEndY())
 
     def quitCross(can, zone):
-        cx, cy, px, py, x, y, ex, ey = ZoneGraphism.dataExtraction(zone)
+        cx, cy, px, py, x, y, ex, ey = GraphicZone.dataExtraction(zone)
 
         can.create_line(x + 2*px, y + 2*py,
                         ex - 2*px, ey - 2*py,
@@ -18,7 +18,7 @@ class ZoneGraphism():
 
 
     def pencil(can, zone):
-        cx, cy, px, py, x, y, ex, ey = ZoneGraphism.dataExtraction(zone)
+        cx, cy, px, py, x, y, ex, ey = GraphicZone.dataExtraction(zone)
 
         can.create_polygon(cx, y + py,
                            cx + 2*px, y + 4*py,
@@ -34,7 +34,7 @@ class ZoneGraphism():
                             tags = "pencil")
 
     def bucket(can, zone):
-        cx, cy, px, py, x, y, ex, ey = ZoneGraphism.dataExtraction(zone)
+        cx, cy, px, py, x, y, ex, ey = GraphicZone.dataExtraction(zone)
 
         can.create_polygon(cx + 1.5*px + 2*px, y + 2*py,
                            cx + 1.5*px, y + 4*py,
@@ -45,7 +45,7 @@ class ZoneGraphism():
                            tags = "bucket")
 
     def start(can, zone):
-        cx, cy, px, py, x, y, ex, ey = ZoneGraphism.dataExtraction(zone)
+        cx, cy, px, py, x, y, ex, ey = GraphicZone.dataExtraction(zone)
 
         can.create_polygon(x + 2*px, y + 2*py,
                            ex - 2*px, cy,
@@ -54,7 +54,7 @@ class ZoneGraphism():
                            tags = "start")
 
     def arrow(can, zone, direction, tags = "codelPointer"):
-        cx, cy, px, py, x, y, ex, ey = ZoneGraphism.dataExtraction(zone)
+        cx, cy, px, py, x, y, ex, ey = GraphicZone.dataExtraction(zone)
         dx, dy = direction[0], direction[1]
 
         #Flemme de faire tous les calculs
@@ -81,7 +81,7 @@ class ZoneGraphism():
                                outline = "black", width = 1)
 
     def reset(can, zone):
-        cx, cy, px, py, x, y, ex, ey = ZoneGraphism.dataExtraction(zone)
+        cx, cy, px, py, x, y, ex, ey = GraphicZone.dataExtraction(zone)
 
         can.create_line(cx, cy + 2*py,
                         cx + 2*px, cy + 2*py,
@@ -95,27 +95,27 @@ class ZoneGraphism():
                         width = 2, tags = "reset")
 
     def stop(can, zone):
-        cx, cy, px, py, x, y, ex, ey = ZoneGraphism.dataExtraction(zone)
+        cx, cy, px, py, x, y, ex, ey = GraphicZone.dataExtraction(zone)
         coef = 3
-        
+
         can.create_polygon(cx, cy - coef*py,
                            cx + coef*px, cy + coef*py,
                            cx - coef*px, cy + coef*py,
                            fill = "#FF0000", outline = "#000000",
                            tags = "stop")
-        
+
         can.create_line(cx, cy - coef*py/3,
                         cx, cy + coef*py/4,
                         fill = "#000000", width = 2,
                         tags = "stop")
-        
+
         can.create_oval(cx - py/2, cy + coef*py - py/2 - py,
                         cx + py/2, cy + coef*py + py/2 - py,
                         fill = "#000000",
                         tags = "stop")
 
     def pause(can, zone):
-        cx, cy, px, py, x, y, ex, ey = ZoneGraphism.dataExtraction(zone)
+        cx, cy, px, py, x, y, ex, ey = GraphicZone.dataExtraction(zone)
         coef = 3
 
         can.create_oval(x + coef*px, y + coef*py,
@@ -124,7 +124,7 @@ class ZoneGraphism():
                         tags = "pause")
 
     def _import(can, zone):
-        cx, cy, px, py, x, y, ex, ey = ZoneGraphism.dataExtraction(zone)
+        cx, cy, px, py, x, y, ex, ey = GraphicZone.dataExtraction(zone)
 
         taille = 2.5
 
@@ -147,7 +147,7 @@ class ZoneGraphism():
 
 
     def _export(can, zone):
-        cx, cy, px, py, x, y, ex, ey = ZoneGraphism.dataExtraction(zone)
+        cx, cy, px, py, x, y, ex, ey = GraphicZone.dataExtraction(zone)
 
         taille = 2.5
 
@@ -169,7 +169,7 @@ class ZoneGraphism():
                            width = 2, tags = "export")
 
     def plus(can, zone):
-        cx, cy, px, py, x, y, ex, ey = ZoneGraphism.dataExtraction(zone)
+        cx, cy, px, py, x, y, ex, ey = GraphicZone.dataExtraction(zone)
 
         size = 3
         p = min(px, py)
@@ -183,7 +183,7 @@ class ZoneGraphism():
                         width = 3, tags = "plus")
 
     def feux(can, zone):
-        cx, cy, px, py, x, y, ex, ey = ZoneGraphism.dataExtraction(zone)
+        cx, cy, px, py, x, y, ex, ey = GraphicZone.dataExtraction(zone)
 
         size = 3
         p = min(px, py)

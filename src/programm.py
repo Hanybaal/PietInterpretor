@@ -1,6 +1,6 @@
-from pile import *
-from output import *
-from grille import *
+from Stack import *
+from Output import *
+from Grid import *
 
 class Programm():
     def __init__(self):
@@ -30,24 +30,24 @@ class Programm():
         return self.shareOutput
 
     #Setteurs
-    def setGrid(self, g = Grille(5, 5)):
+    def setGrid(self, g = Grid(5, 5)):
         self.grid = g
 
     def setOutput(self, output):
-        self.output = OutPut()
+        self.output = Output()
         self.output.output = output.output
         self.output.lines = list(output.lines)
         self.output.cursor = output.cursor
 
     def setStack(self, stack):
-        self.stack = Pile()
-        self.stack.pile = list(stack.pile)
+        self.stack = Stack()
+        self.stack.stack = list(stack.stack)
         self.stack.hauteur = stack.hauteur
 
     def blankInit(self):
-        self.setGrid(Grille(5, 5))
-        self.setOutput(OutPut())
-        self.setStack(Pile())
+        self.setGrid(Grid(5, 5))
+        self.setOutput(Output())
+        self.setStack(Stack())
 
     def setFires(self, f1, f2):
         self.fireStack = f1

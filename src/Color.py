@@ -1,6 +1,6 @@
 
 
-class Couleur():
+class Color():
     #Fonctions non rapportées aux couleurs de l'interpréteur
     def getRGBFromHexa(hexa : str):
         return tuple(int(hexa[i:i+2], 16) for i in (1, 3, 5))
@@ -12,30 +12,30 @@ class Couleur():
         return ("#{:02x}{:02x}{:02x}").format(rgb[0], rgb[1], rgb[2])
 
     #Fonctions liées à l'interpréteur en lui-même
-    def notACouleur(couleur):
-        return ((couleur.getCouleur() < 0) and (couleur.getLuminosite() < 0))
+    def notAColor(couleur):
+        return ((couleur.getColor() < 0) and (couleur.getLuminosity() < 0))
 
     def reconvertColor(couleur):
-        if (couleur.getCouleur() == -1):
-            return Couleur(8, 0)
+        if (couleur.getColor() == -1):
+            return Color(8, 0)
 
-        elif (couleur.getCouleur() == -2):
-            return Couleur(7, 0)
+        elif (couleur.getColor() == -2):
+            return Color(7, 0)
 
         return couleur
 
     def sameColor(c1, c2):
-        return ((c1.getCouleur() == c2.getCouleur()) and (c1.getLuminosite() == c2.getLuminosite()))
-    
+        return ((c1.getColor() == c2.getColor()) and (c1.getLuminosity() == c2.getLuminosity()))
+
     def __init__(self, couleur :  int, luminosite: int):
-        self.couleur = couleur
-        self.luminosite = luminosite
-        self.hexa = self.convertCouleurToHexa()
+        self.color = couleur
+        self.luminosity = luminosite
+        self.hexa = self.convertColorToHexa()
 
     def __repr__(self) -> str:
         return (self.hexa)
 
-    def convertCouleurToHexa(self) -> str:
+    def convertColorToHexa(self) -> str:
         dico_convert = {"11" : "#FFC0C0",
                         "12" : "#FF0000",
                         "13" : "#C00000",
@@ -58,16 +58,16 @@ class Couleur():
                         "80" : "#000000",
                         "-2-2" : "#FFFFFF",
                         "-1-1" : "#000000"}
-        return (dico_convert[str(self.couleur) + str(self.luminosite)])
+        return (dico_convert[str(self.color) + str(self.luminosity)])
 
-    def getCouleur(self):
-        return self.couleur
+    def getColor(self):
+        return self.color
 
-    def getLuminosite(self):
-        return self.luminosite
+    def getLuminosity(self):
+        return self.luminosity
 
     def isBlack(self):
-        return (self.getCouleur() == 8)
+        return (self.getColor() == 8)
 
     def isWhite(self):
-        return (self.getCouleur() == 7)
+        return (self.getColor() == 7)

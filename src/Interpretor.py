@@ -1,28 +1,28 @@
-from pile import *
-from output import *
-from grille import *
-from couleur import *
-from commandes import *
+from Stack import *
+from Output import *
+from Grid import *
+from Color import *
+from Controls import *
 import time
 
 
-class InterpreteurPiet():
-    def __init__(self, grille, stack = Pile(), output = OutPut()):
+class PietInterpretor():
+    def __init__(self, grille, stack = Stack(), output = Output()):
         self.allBlocks = []
         self.stack = stack
         self.grille = grille
-        for line in self.grille.getGrille():
+        for line in self.grille.getGrid():
             for column in line:
                 column.chercheVoisins(self.grille)
         self.output = output
-        self.dp = PointeurDirectionnel()
+        self.dp = DirectionnalPointer()
         self.cc = PointeurExtremite()
-        self.cmd = Commandes(self.dp, self.cc, self.output, self.stack)
+        self.cmd = Controls(self.dp, self.cc, self.output, self.stack)
         self.ordonnateur = Ordonnateur(self.cmd)
 
 
     def lecture(self, grille, codel, nbEchecs = 0, speedyLector = False):
-        couleur = codel.getCouleur()
+        couleur = codel.getColor()
         commande = self.ordonnateur.actualCommand(couleur)
         nom = self.ordonnateur.actualCommandName(couleur)
         #On a une instruction à réaliser
@@ -39,7 +39,7 @@ class InterpreteurPiet():
         if (not speedyLector):
             print()
             print(nom)
-            self.affichePile()
+            self.afficheStack()
             self.afficheEtatDPCC()
 
         if commande != None and (nbEchecs == 0):
@@ -74,10 +74,10 @@ class InterpreteurPiet():
 
         #On modifie le tableau pour pouvoir interpréter la prochaine couleur
         if (self.allBlocks[-1].isWhite()):
-            self.ordonnateur.change_cmd(newCell.getCouleur())
+            self.ordonnateur.change_cmd(newCell.getColor())
 
         else:
-            self.ordonnateur.change_cmd(codel.getCouleur())
+            self.ordonnateur.change_cmd(codel.getColor())
 
         if (not speedyLector):
             time.sleep(1)
@@ -98,7 +98,7 @@ class InterpreteurPiet():
         self.dp.afficheEtat()
         self.cc.afficheEtat()
 
-    def affichePile(self):
+    def afficheStack(self):
         self.stack.afficher()
 
     def maxEchecs(self, n):
@@ -191,14 +191,14 @@ class Ordonnateur():
         for couleur in range(1, 7):
             couls.append([])
             for luminosite in range(1, 4):
-                couls[-1].append(Couleur(couleur, luminosite))
-        couls.append(Couleur(7, 0))
-        couls.append(Couleur(8, 0))
+                couls[-1].append(Color(couleur, luminosite))
+        couls.append(Color(7, 0))
+        couls.append(Color(8, 0))
         return couls
 
     def genere_tab_commandes(self, couleur):
         cmd = [[], [], [], [], [], []]
-        y, x = couleur.getCouleur() - 1, couleur.getLuminosite() - 1
+        y, x = couleur.getColor() - 1, couleur.getLuminosity() - 1
         #x2, y2 = c.x, c.y
         for i in range(6):
             for j in range(3):
@@ -206,7 +206,7 @@ class Ordonnateur():
         return cmd
 
     def change_cmd(self, newColor):
-        if (Couleur.notACouleur(newColor)):
+        if (Color.notAColor(newColor)):
             self.cmdTab = [[(None, "None") for i in range(3)] for j in range(6)]
             return
         self.cmdTab = self.genere_tab_commandes(newColor)
@@ -230,15 +230,15 @@ class Ordonnateur():
         if (couleur.isWhite()):
             return None
 
-        x = couleur.getLuminosite() - 1
-        y = couleur.getCouleur() - 1
+        x = couleur.getLuminosity() - 1
+        y = couleur.getColor() - 1
         return self.cmdTab[y][x][0]
 
     def actualCommandName(self, couleur):
         if (couleur.isWhite()):
             return "None"
-        x = couleur.getLuminosite() - 1
-        y = couleur.getCouleur() - 1
+        x = couleur.getLuminosity() - 1
+        y = couleur.getColor() - 1
         return self.cmdTab[y][x][1]
 
     def printCmd(self):
@@ -254,11 +254,11 @@ fichier = open("./../programmsBank/blank.txt", "r")
 t = fichier.readlines()
 x = len(t[-1])//2
 y = len(t)
-g = Grille(x, y)
+g = Grid(x, y)
 for ligne in range(len(g.grille)):
     for colonne in range(len(g.grille[ligne])):
         g.grille[ligne][colonne] = Cellule(
-            Couleur(int(t[ligne][colonne*2]), int(t[ligne][colonne*2+1])), colonne, ligne)
+            Color(int(t[ligne][colonne*2]), int(t[ligne][colonne*2+1])), colonne, ligne)
 
 for ligne in range(len(g.grille)):
     for colonne in range(len(g.grille[ligne])):
@@ -267,5 +267,5 @@ for ligne in range(len(g.grille)):
 fichier.close()
 
 if __name__ == "__main__":
-    i = InterpreteurPiet(g)
-    i.lecture(i.grille, i.grille.getGrille()[0][0])
+    i = PietInterpretor(g)
+    i.lecture(i.grille, i.grille.getGrid()[0][0])

@@ -1,6 +1,6 @@
 
 
-class PointeurDirectionnel():
+class DirectionnalPointer():
     def __init__(self, d = 0):
         self.directions = [(1, 0), (0, 1), (-1, 0), (0, -1)]
         self.pt = d

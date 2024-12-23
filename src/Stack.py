@@ -1,39 +1,38 @@
-from PointeurDirectionel import *
+from DirectionnalPointer import *
 
-class Pile():
+class Stack():
     def __init__(self):
-        self.pile = []
+        self.stack = []
         self.hauteur = 0
 
-
     def __repr__(self):
-        return (str(self.pile))
+        return (str(self.stack))
 
     def afficher(self):
         print("--------------------")
-        for p in self.pile:
+        for p in self.stack:
             print(p)
             print("________")
         print("--------------------")
 
     def empty(self):
-        return (self.pile == [])
+        return (self.stack == [])
 
     def reinit(self):
-        self.pile = []
+        self.stack = []
         self.hauteur = 0
 
     def empile(self, valeur):
-        self.pile.append(valeur)
+        self.stack.append(valeur)
         self.hauteur += 1
 
     def push(self, block):
         self.empile(block.getValeur())
 
     def pop(self):
-        if self.pile:
-            v = self.pile[self.hauteur-1]
-            self.pile.pop(self.hauteur-1)
+        if self.stack:
+            v = self.stack[self.hauteur-1]
+            self.stack.pop(self.hauteur-1)
             self.hauteur -= 1
             return v
 
@@ -88,18 +87,18 @@ class Pile():
             print("Mod impossible!!")
 
     def nope(self):
-        if self.pile:
-            if self.sommet() == 0:
-                self.replace_hauteur(1)
+        if self.stack:
+            if self.top() == 0:
+                self.replaceHeight(1)
 
             else:
-                self.replace_hauteur(0)
+                self.replaceHeight(0)
         else:
             print("Pile vide!!")
 
-    def replace_hauteur(self, valeur):
-        if self.pile:
-            self.pile[self.hauteur-1] = valeur
+    def replaceHeight(self, valeur):
+        if self.stack:
+            self.stack[self.hauteur-1] = valeur
 
 
     def greater(self):
@@ -116,7 +115,7 @@ class Pile():
             print("Comparaison impossible!!")
 
     def duplicate(self):
-        self.empile(self.sommet())
+        self.empile(self.top())
 
     def roll(self):
         v1 = self.pop()
@@ -127,12 +126,12 @@ class Pile():
 ##Roll originel. Remplacé par un switch (caractère '/' en befunge)
 ##        v1 = self.pop()
 ##        v2 = self.pop()
-##        p = self.pile[:v2]
+##        p = self.stack[:v2]
 ##        for i in range(v1):
 ##            for j in range(len(p) - 1):
 ##                p[j], p[j + 1] = p[j + 1], p[j]
 ##
-##        self.pile = p + self.pile[v2:]
+##        self.stack = p + self.stack[v2:]
 
     def inInt(self):
         v = int(input("Rentrez un nombre: "))
@@ -145,5 +144,5 @@ class Pile():
         v = input("Rentrez un caractère: ")
         self.inValid(v)
 
-    def sommet(self):
-        return self.pile[self.hauteur-1]
+    def top(self):
+        return self.stack[self.hauteur-1]

@@ -1,6 +1,6 @@
 
 
-class Commandes():
+class Controls():
     def __init__(self, dp, cc, output, stack):
         self.dp = dp
         self.cc = cc
@@ -34,7 +34,7 @@ class Commandes():
 
     def empile(self, valeur):
         self.stack.empile(valeur)
-        
+
     def push(self, block):
         self.stack.push(block)
 

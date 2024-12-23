@@ -1,6 +1,6 @@
 from random import randint
 
-class OutPut():
+class Output():
     def __init__(self, nbCarPerLine = 10):
         self.output = ""
         self.nbCarPerLine = nbCarPerLine
@@ -11,19 +11,19 @@ class OutPut():
 ##            for j in range(len(self.nbTests[i])):
 ##                self.outNum(self.nbTests[i][j])
 
-    def stack(self, v):            
+    def stack(self, v):
         self.output += str(v)
 
         #Mise à jour des lignes pour l'interface graphique
         if ((self.cursor >= self.nbCarPerLine) or (self.output[-1] == chr(10))
             or ((self.cursor + len(str(v))) > self.nbCarPerLine)):
             self.lines.append(" "*self.nbCarPerLine)
-            self.cursor = 0         
+            self.cursor = 0
 
         if (self.output[-1] != chr(10)):
             self.lines[-1] = self.lines[-1][:self.cursor] + str(v) + self.lines[-1][self.cursor+1:]
             self.cursor += len(str(v))
-        
+
         #Réinitialisation de l'output
         self.reset_output()
         #self.affiche_output()
@@ -67,7 +67,7 @@ class OutPut():
             if (cpt <= 1):
                 n += 1
                 cpt = nbCarPerLine
-            
+
             elif (actualCar == chr(10)):
                 cpt = nbCarPerLine
                 n += 1
@@ -88,7 +88,7 @@ class OutPut():
                 lines.append(line)
                 line = actualCar
                 cpt = nbCarPerLine
-            
+
             elif (actualCar == chr(10)):
                 cpt = 0
 

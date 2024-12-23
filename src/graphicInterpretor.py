@@ -1,7 +1,7 @@
 from Theme import *
-from interpreteur import *
+from Interpretor import *
 from Zone import *
-from ZoneGraphism import *
+from GraphicZone import *
 import tkinter as tk
 from math import *
 from random import randint
@@ -11,9 +11,9 @@ import sys
 from tkinter import filedialog
 
 
-class GraphicalInterpretor(InterpreteurPiet):
-    def __init__(self, fen = None, main = None, grille = Grille(5, 5), ptc = 0,
-                 launched = False, isLast = False, stack = Pile(), output = OutPut()):
+class GraphicalInterpretor(PietInterpretor):
+    def __init__(self, fen = None, main = None, grille = Grid(5, 5), ptc = 0,
+                 launched = False, isLast = False, stack = Stack(), output = Output()):
         super().__init__(grille, stack, output)
 
         self.main = main
@@ -38,7 +38,7 @@ class GraphicalInterpretor(InterpreteurPiet):
         self.codeZone = None
         self.nbDrawingWidgets = 8
         self.nbElementsInStack = 10
-        self.actualColor = Couleur(7, 0)
+        self.actualColor = Color(7, 0)
         self.mode = "single"
         self.inp = None
         self.goodInput = tk.BooleanVar()
@@ -58,8 +58,6 @@ class GraphicalInterpretor(InterpreteurPiet):
             self.lecture(self.grille, self.grille.getCellule(0, 0))
 
         self.fen.mainloop()
-
-
 
     def lecture(self, grille, codel, nbEchecs = 0):
         if ((self.mode == "reset") or (self.mode == "stop")):
@@ -84,7 +82,7 @@ class GraphicalInterpretor(InterpreteurPiet):
             return
 
         self.majCodelLector(codel)
-        couleur = codel.getCouleur()
+        couleur = codel.getColor()
         commande = self.ordonnateur.actualCommand(couleur)
         nom = self.ordonnateur.actualCommandName(couleur)
         #On a une instruction à réaliser
@@ -144,17 +142,519 @@ class GraphicalInterpretor(InterpreteurPiet):
 
         #On modifie le tableau pour pouvoir interpréter la prochaine couleur
         if (self.allBlocks[-1].isWhite()):
-            self.ordonnateur.change_cmd(newCell.getCouleur())
+            self.ordonnateur.change_cmd(newCell.getColor())
 
         else:
-            self.ordonnateur.change_cmd(codel.getCouleur())
+            self.ordonnateur.change_cmd(codel.getColor())
 
         self.can.update()
         self.fen.after(self.speed, lambda : self.lecture(grille, newCell, nbEchecs))
         #self.lecture(grille, newCell, nbEchecs)
 
 
+########################################################################################
+##### Fonctions D'Etat #################################################################
+########################################################################################
+    def _export(self):
+        # Demander à l'utilisateur de choisir un emplacement pour enregistrer le fichier
+        fichier_destination = filedialog.asksaveasfilename(defaultextension=".txt",
+                                                filetypes=[("Fichiers texte", "*.txt"),
+                                                ("Tous les fichiers", "*.*")])
 
+        # Écrire des données dans le fichier (ici un exemple avec une chaîne de texte)
+        if fichier_destination:
+            with open(fichier_destination, "w") as fichier:
+                for line in self.grille.getGrid():
+                    for cellule in line:
+                        couleur = cellule.getColor()
+                        fichier.write(str(couleur.getColor()))
+                        fichier.write(str(couleur.getLuminosity()))
+
+                    fichier.write(chr(10))
+
+        self.programmName = os.path.basename(fichier_destination)[:-4] #txt en moins
+
+        if (self.main != None):
+            self.main.rename(self.programmName)
+
+    def countMinus(self, txt):
+        s = 0
+        for i in range(len(txt)):
+            if (txt[i] == '-'):
+                s += 1
+        return s
+
+    def _import(self):
+        # Demander à l'utilisateur de choisir un fichier à importer
+        fichier_source = filedialog.askopenfilename(filetypes=[("Fichiers texte", "*.txt"),
+                                                   ("Tous les fichiers", "*.*")])
+
+        # Lire les données du fichier sélectionné (ici un exemple de lecture)
+        if fichier_source:
+            self.programmName = os.path.basename(fichier_source)[:-4] #txt en moins
+
+            if (self.main != None):
+                self.main.rename(self.programmName)
+
+            fichier = open(fichier_source, "r")
+            t = fichier.readlines()
+            for c in range(len(t)):
+                t[c] = t[c][:-1]
+
+            x = len(t[-1])//2
+            if ('-' in t[-1]):
+                s = self.countMinus(t[-1])
+                x = (len(t[-1]) - s)//2
+
+            y = len(t)
+            g = Grid(x, y)
+            nbMoins = 0
+            for ligne in range(len(g.grille)):
+                nbMoins = 0
+                for colonne in range(len(g.grille[ligne])):
+                    w1 = t[ligne][colonne*2 + nbMoins]
+                    if (w1 == '-'):
+                        w1 = t[ligne][colonne*2 + nbMoins] + t[ligne][colonne*2 + nbMoins + 1]
+                        nbMoins += 1
+
+                    w2 = t[ligne][colonne*2 + nbMoins + 1]
+                    if (w2 == '-'):
+                        w2 = t[ligne][colonne*2 + nbMoins + 1] + t[ligne][colonne*2 + nbMoins + 2]
+                        nbMoins += 1
+
+                    g.grille[ligne][colonne] = Cellule(Color(int(w1), int(w2)),
+                                                               colonne, ligne)
+
+
+            for ligne in range(len(g.grille)):
+                for colonne in range(len(g.grille[ligne])):
+                    g.grille[ligne][colonne].chercheVoisins(g)
+
+            fichier.close()
+
+            self.grille = g
+
+            self.reinit()
+            self.can.delete("codeZone")
+            self.grille = g
+
+            self.codeZone.underZones = []
+            self.makeCodeZone(self.codeZone)
+            self.colorZone(self.zone2)
+
+            codeZone = self.codeZone
+
+            ########## décorations ##########
+            codeZoneExtr = [(codeZone.getX(), codeZone.getY()),
+                            (codeZone.getEndX(), codeZone.getY()),
+                            (codeZone.getEndX(), codeZone.getEndY()),
+                            (codeZone.getX(), codeZone.getEndY())]
+
+            zone2Extr = [(self.zone2.getX(), self.zone2.getY()),
+                         (self.zone2.getEndX(), self.zone2.getY()),
+                         (self.zone2.getEndX(), self.zone2.getEndY()),
+                         (self.zone2.getX(), self.zone2.getEndY())]
+
+            scze = len(codeZoneExtr)
+            w = 2
+            c = "black"
+            for i in range(len(codeZoneExtr)):
+                self.can.create_line(codeZoneExtr[i][0], codeZoneExtr[i][1],
+                                     zone2Extr[i][0], zone2Extr[i][1],
+                                     fill = c, width = w,
+                                     tags = "codeZone")
+
+                self.can.create_line(codeZoneExtr[(i+1)%scze][0], codeZoneExtr[(i+1)%scze][1],
+                                     zone2Extr[i][0], zone2Extr[i][1],
+                                     fill = c, width = w,
+                                     tags = "codeZone")
+
+                self.can.create_line(codeZoneExtr[(i-1)%scze][0], codeZoneExtr[(i-1)%scze][1],
+                                     zone2Extr[i][0], zone2Extr[i][1],
+                                     fill = c, width = w,
+                                     tags = "codeZone")
+
+    def reinit(self):
+        self.programmName = "Unamed"
+        self.allBlocks = []
+        self.mode = "single"
+        self.actualColor = Color(7, 0)
+        self.dp.reinit()
+        self.cc.reinit()
+        self.ordonnateur = Ordonnateur(self.cmd)
+        #self.ordonnateur.change_cmd(Color(-1, -1))
+        self.stack.reinit()
+        self.output.reinit()
+        self.majOutput()
+        self.majStack()
+
+    def reset(self, x = 5, y = 5):
+        gx, gy = self.sizeCodeX.get(), self.sizeCodeY.get()
+        x = int(gx) if gx.isnumeric() else x
+        y = int(gy) if gy.isnumeric() else y
+
+        self.reinit()
+        self.can.delete("codeZone")
+        self.grille = Grid(x, y)
+        for line in self.grille.getGrid():
+            for column in line:
+                column.chercheVoisins(self.grille)
+
+        self.codeZone.underZones = []
+        self.makeCodeZone(self.codeZone)
+        self.colorZone(self.zone2)
+
+        codeZone = self.codeZone
+
+        ########## décorations ##########
+        codeZoneExtr = [(codeZone.getX(), codeZone.getY()),
+                        (codeZone.getEndX(), codeZone.getY()),
+                        (codeZone.getEndX(), codeZone.getEndY()),
+                        (codeZone.getX(), codeZone.getEndY())]
+
+        zone2Extr = [(self.zone2.getX(), self.zone2.getY()),
+                     (self.zone2.getEndX(), self.zone2.getY()),
+                     (self.zone2.getEndX(), self.zone2.getEndY()),
+                     (self.zone2.getX(), self.zone2.getEndY())]
+
+        scze = len(codeZoneExtr)
+        w = 2
+        c = "black"
+        for i in range(len(codeZoneExtr)):
+            self.can.create_line(codeZoneExtr[i][0], codeZoneExtr[i][1],
+                                 zone2Extr[i][0], zone2Extr[i][1],
+                                 fill = c, width = w,
+                                 tags = "codeZone")
+
+            self.can.create_line(codeZoneExtr[(i+1)%scze][0], codeZoneExtr[(i+1)%scze][1],
+                                 zone2Extr[i][0], zone2Extr[i][1],
+                                 fill = c, width = w,
+                                 tags = "codeZone")
+
+            self.can.create_line(codeZoneExtr[(i-1)%scze][0], codeZoneExtr[(i-1)%scze][1],
+                                 zone2Extr[i][0], zone2Extr[i][1],
+                                 fill = c, width = w,
+                                 tags = "codeZone")
+        ################################################################################
+
+        if (self.main != None):
+            lc = self.main.lastCode
+            self.main.programms[lc].grid = self.grille
+            self.main.programms[lc].stack = self.stack
+            self.main.programms[lc].output = self.output
+
+
+
+    def convertIntoMode(self, x):
+        if (x == 0):
+            return "single"
+
+        if (x == 1):
+            return "recursive"
+
+        if (x == 3):
+            return "reset"
+
+        if (x == 4):
+            return "stop"
+
+        if (x == 5):
+            return "pause"
+
+        if (x == 6):
+            return "import"
+
+        if (x == 7):
+            return "export"
+
+        return "start"
+
+    def pauseMode(self):
+        if (self.pause.get() == 0):
+            self.pause.set(1)
+            self.mode = "pause"
+
+        else:
+            self.pause.set(0)
+            self.mode = "normal"
+
+    def newSpeed(self, event):
+        self.speed = self.respeed.get()
+
+    def waitReturn(self, v):
+        if (self.main is not None):
+            self.main.fen.wait_variable(v)
+        else:
+            self.fen.wait_variable(v)
+
+    def validInput(self, event = None):
+        value = self.inp.get()
+
+        if ((value != "") and ((self.mode == "in(num)") or (self. mode == "in(char)"))):
+            if (self.mode == "in(num)"):
+                if not (value.isnumeric()):
+                    return
+
+            elif (self.mode == "in(char)"):
+                if (value.isnumeric() or (len(value) > 1)):
+                    return
+
+            self.goodInput.set(True)
+            self.stack.inValid(value)
+            return
+        return
+
+    def whatCodeZoneIsChoosed(self, x, y):
+        codeTable = self.zone2.underZones[0]
+        sx = len(self.grille.grille[0])
+        sy = len(self.grille.grille)
+        z = int((x - codeTable.getX())*sx/(codeTable.getSizeX()))
+        z += int((y - codeTable.getY())*sy/(codeTable.getSizeY()))*sx
+        z = int(z)
+        return (codeTable.underZones[z], z)
+
+
+    def whatZoneIsChoosed(self, x, y):
+        zone = None
+        colorTab = self.zone1.underZones[2]
+        size = len(colorTab.underZones)
+        for z in range(size):
+            self.can.itemconfigure(colorTab.underZones[z].graphicZone,
+                                   fill = colorTab.underZones[z].getColor())
+            if Zone.inZone(colorTab.underZones[z], x, y):
+                zone = z
+
+        if (zone is None):
+            return None
+
+        self.can.itemconfigure(colorTab.underZones[zone].graphicZone, fill = "gray73")
+
+        return (zone if (zone < (size - 2)) else (zone - size))
+
+########################################################################################
+##### Fonctions évènementielles ########################################################
+########################################################################################
+    def scroll(self, direction):
+        #Si un des deux boutons de la scrollBar est pressé:
+        #*** Saute une ligne ou la remet dans l'output
+        self.firstLine += direction
+        if (self.firstLine < 0):
+            self.firstLine = 0
+            return
+        self.majOutput()
+
+    def chosenWidget(self, event):
+        widgetZone = self.zone1.underZones[1]
+
+        for i in range(len(widgetZone.underZones)):
+            self.can.itemconfigure(widgetZone.underZones[i].graphicZone, fill = "plum3")
+
+        x = int((event.x - widgetZone.getX())*self.nbDrawingWidgets/widgetZone.getSizeX())
+        self.can.itemconfigure(widgetZone.underZones[x].graphicZone,
+                               fill = "white smoke")
+
+        self.mode = self.convertIntoMode(x)
+        if (self.mode == "start"):
+            self.reinit()
+            self.lecture(self.grille, self.grille.getCellule(0, 0))
+
+        if (self.mode == "reset"):
+            self.reset()
+
+        if (self.mode == "pause"):
+            self.pauseMode()
+
+        if (self.mode == "import"):
+            self._import()
+
+        if (self.mode == "export"):
+            self._export()
+
+    def changeCmdInTab(self, event):
+        zone = self.whatZoneIsChoosed(event.x, event.y)
+        if (zone is None):
+            return
+
+        y, x = zone//len(self.ordonnateur.colorTab[0]), zone%len(self.ordonnateur.colorTab[0])
+        if (zone != -1 and zone != -2):
+            color = self.ordonnateur.colorTab[y][x]
+
+        else:
+            color = Color(zone, zone)
+
+        if (color == None):
+            return
+
+        self.ordonnateur.change_cmd(color)
+        self.actualColor = color
+
+        self.can.delete("cmd")
+
+        graphicalTab = self.zone1.underZones[2]
+        cmdTab = self.ordonnateur.cmdTab
+        l, h = len(cmdTab), len(cmdTab[0])
+        i = -1
+        for zone in range(h*l):
+            if (zone%h == 0):
+                i += 1
+
+            txt = cmdTab[i][zone%h][1]
+            txt = "" if (txt == "None") else txt
+            self.can.create_text(graphicalTab.underZones[zone].getCenter()[0],
+                                 graphicalTab.underZones[zone].getCenter()[1],
+                                 text = "" if Color.notAColor(color) else txt,
+                                 tags = ("cmd", "colorTab"))
+
+        self.can.tag_bind("colorTab", "<Button-1>", self.changeCmdInTab)
+
+    def colorZoneCodel(self, event):
+        if ((self.mode == "single") or (self.mode == "recursive")):
+            codel, z = self.whatCodeZoneIsChoosed(event.x, event.y)
+
+            color = self.actualColor.convertColorToHexa()
+            self.can.itemconfigure(codel.graphicZone, fill = color)
+            codel.color = self.actualColor
+            x = z%len(self.grille.grille[0])
+            y = z//len(self.grille.grille[0])
+            caseColor = self.grille.grille[y][x].getColor()
+            self.grille.grille[y][x].change_couleur(self.actualColor)
+
+            if (self.mode == "recursive"):
+                self.cascadeColor(caseColor, self.grille.getCellule(y, x), [])
+
+    def keyboardEvents(self, event):
+        touche = event.keysym
+        if touche == "Escape":
+            self.quit()
+
+    def quit(self, event = None):
+        if (self.main != None):
+            self.main.canQuit = True
+
+            self.main.fen.deiconify()
+
+            if not self.launched:
+                self.main.programms[self.programmToChange].setGrid(self.grille)
+                self.main.majCodeZone()
+                self.fen.destroy()
+
+
+            else:
+                self.fen.destroy()
+                self.main.programms[self.programmToChange].setStack(self.stack)
+                self.main.programms[self.programmToChange].setOutput(self.output)
+                self.main.launchGraphical(self.programmToChange + 1)
+
+
+
+
+########################################################################################
+########################################################################################
+########################################################################################
+########################################################################################
+##### Fonctions graphiques #############################################################
+########################################################################################
+########################################################################################
+########################################################################################
+########################################################################################
+    def cascadeColor(self, color, origin, visites = []):
+        visites.append(origin)
+        origin.change_couleur(self.actualColor)
+
+        actualColor = self.actualColor.convertColorToHexa()
+
+        zone = self.zone2.underZones[0].underZones[origin.getX() + origin.getY()*len(self.grille.grille[0])]
+        self.can.itemconfigure(zone.graphicZone, fill = actualColor)
+        zone.color = actualColor
+
+        for v in origin.voisins:
+            if (v not in visites) and (Color.sameColor(color, v.getColor())):
+                self.cascadeColor(color, v, visites)
+
+    def makeCodeZone(self, codeZone):
+        sx, sy = len(self.grille.getRow(0)), len(self.grille.getGrid())
+        ssx, ssy = codeZone.getSizeX()/sx, codeZone.getSizeY()/sy
+        for row in range(sy):
+            for column in range(sx):
+                codeZone.addZone(TouchableZone((column*ssx, row*ssy), (ssx, ssy),
+                                self.grille.getCellule(row, column).getColor(),
+                                               command = self.colorZoneCodel,
+                                               tags = "codeZone"))
+
+    def colorZone(self, zone, bg = -1):
+        if (bg < 0):
+            zone.creaZone(self.can)
+
+        for i in range(len(zone.underZones)):
+            self.colorZone(zone.underZones[i], bg - 1)
+
+    def cleanGrid(self):
+        g = self.grille.getGrid()
+        for i in range(len(g)):
+            for j in range(len(g[0])):
+                self.grille.grille[i][j].color = Color.reconvertColor(g[i][j].getColor())
+
+    def majCodelLector(self, codel):
+        x, y = codel.getX(), codel.getY()
+        zone = self.zone2.underZones[0].underZones[x + y*len(self.grille.grille[0])]
+        cx, cy = zone.getCenter()[0], zone.getCenter()[1]
+
+        self.can.delete("codelPointer")
+        GraphicZone.arrow(self.can, zone, self.dp.direction_actuelle())
+
+
+    def majOutput(self):
+        self.can.delete("outputText")
+        nbl = len(self.output.lines)
+        if (self.firstLine >= nbl):
+            return
+
+        outputZone = self.zone3.underZones[2].underZones[-2]
+
+        nbLines = len(self.output.lines)
+        nbLinesForOutput = 10
+        if ((nbl - self.firstLine) < 10):
+            nbLinesForOutput = (nbl - self.firstLine)
+            if (nbLinesForOutput < 0):
+                nbLinesForOutput = 0
+
+        elif (nbl < 10):
+            nbLinesForOutput = nbl
+
+        firstLine = self.firstLine
+
+        nbCarPerLine = self.output.nbCarPerLine
+        ncar = self.output.carNumber()
+
+        for i in range(nbLinesForOutput):
+            addy = i*outputZone.getSizeY()/10
+            for j in range(nbCarPerLine):
+                addx = j*outputZone.getSizeX()/nbCarPerLine
+                self.can.create_text(
+                    outputZone.getX() + addx + outputZone.getPax()/2,
+                    outputZone.getY() + addy + outputZone.getPay()/2,
+                    text = self.output.lines[firstLine + i][j],
+                    tags = "outputText",
+                    font = 'Georgia 15 bold')
+
+    def majStack(self):
+        self.can.delete("stackValue")
+        stackZone = self.zone3.underZones[0].underZones[0]
+
+        p1 = []
+        i = 0
+        while not (self.stack.empty() or i == (self.nbElementsInStack)):
+            p1.append(self.stack.pop())
+
+            zone = stackZone.underZones[i]
+            self.can.create_text(zone.getX() + zone.getSizeX()/2,
+                                 zone.getY() + zone.getSizeY()/2,
+                                 text = str(p1[-1]), tags = "stackValue",
+                                 font = 'Georgia 10 bold')
+            i += 1
+
+        for i in range(len(p1)):
+            self.stack.empile(p1[-1 -i])
 
     def widgets(self):
         self.can = tk.Canvas(self.fen, bg = "light blue", height = self.size2,
@@ -214,7 +714,7 @@ class GraphicalInterpretor(InterpreteurPiet):
             for teinte in couleur:
                 j += 1
                 colorTab.addZone(TouchableZone((i*pas, j*pah), (pas, pah),
-                                 teinte.convertCouleurToHexa(),
+                                 teinte.convertColorToHexa(),
                                  tags = "colorTab",
                                  command = self.changeCmdInTab))
 
@@ -319,12 +819,12 @@ class GraphicalInterpretor(InterpreteurPiet):
                             (blankZone.getPax(), blankZone.getPax()),
                             "white", tags = "scrollBarUp",
                             command = lambda c : self.scroll(-1)))
-        
+
         scroll.addZone(TouchableZone((0, blankZone.getSizeY() - blankZone.getPax()),
                             (blankZone.getPax(), blankZone.getPax()),
                              "white", tags = "scrollBarDown",
-                             command = lambda c : self.scroll(1)))      
-        
+                             command = lambda c : self.scroll(1)))
+
         self.colorZone(self.zone1)
         self.colorZone(self.zone2)
         self.colorZone(self.zone3)
@@ -335,7 +835,7 @@ class GraphicalInterpretor(InterpreteurPiet):
         #Textes et décorations supplémentaires
         #Zone 1: bouton quitter
         if self.main == None:
-            ZoneGraphism.quitCross(self.can, quitButton)
+            GraphicZone.quitCross(self.can, quitButton)
 
         else:
             quitButton = self.can.create_text(35, 15,
@@ -344,28 +844,28 @@ class GraphicalInterpretor(InterpreteurPiet):
                                              tags = "txtEchap")
 
         #Zone 1: widgets de dessin
-        ZoneGraphism.pencil(self.can, drawingWidgets.underZones[0])
+        GraphicZone.pencil(self.can, drawingWidgets.underZones[0])
         self.can.tag_bind("pencil", "<Button-1>", self.chosenWidget)
 
-        ZoneGraphism.bucket(self.can, drawingWidgets.underZones[1])
+        GraphicZone.bucket(self.can, drawingWidgets.underZones[1])
         self.can.tag_bind("bucket", "<Button-1>", self.chosenWidget)
 
-        ZoneGraphism.start(self.can, drawingWidgets.underZones[2])
+        GraphicZone.start(self.can, drawingWidgets.underZones[2])
         self.can.tag_bind("start", "<Button-1>", self.chosenWidget)
 
-        ZoneGraphism.reset(self.can, drawingWidgets.underZones[3])
+        GraphicZone.reset(self.can, drawingWidgets.underZones[3])
         self.can.tag_bind("reset", "<Button-1>", self.chosenWidget)
 
-        ZoneGraphism.stop(self.can, drawingWidgets.underZones[4])
+        GraphicZone.stop(self.can, drawingWidgets.underZones[4])
         self.can.tag_bind("stop", "<Button-1>", self.chosenWidget)
 
-        ZoneGraphism.pause(self.can, drawingWidgets.underZones[5])
+        GraphicZone.pause(self.can, drawingWidgets.underZones[5])
         self.can.tag_bind("pause", "<Button-1>", self.chosenWidget)
 
-        ZoneGraphism._import(self.can, drawingWidgets.underZones[6])
+        GraphicZone._import(self.can, drawingWidgets.underZones[6])
         self.can.tag_bind("import", "<Button-1>", self.chosenWidget)
 
-        ZoneGraphism._export(self.can, drawingWidgets.underZones[7])
+        GraphicZone._export(self.can, drawingWidgets.underZones[7])
         self.can.tag_bind("export", "<Button-1>", self.chosenWidget)
 
         self.can.create_text(drawingWidgets.getCenter()[0],
@@ -410,7 +910,7 @@ class GraphicalInterpretor(InterpreteurPiet):
                         (codeZone.getEndX(), codeZone.getY()),
                         (codeZone.getEndX(), codeZone.getEndY()),
                         (codeZone.getX(), codeZone.getEndY())]
-        
+
         zone2Extr = [(self.zone2.getX(), self.zone2.getY()),
                      (self.zone2.getEndX(), self.zone2.getY()),
                      (self.zone2.getEndX(), self.zone2.getEndY()),
@@ -424,7 +924,7 @@ class GraphicalInterpretor(InterpreteurPiet):
                                  zone2Extr[i][0], zone2Extr[i][1],
                                  fill = c, width = w,
                                  tags = "codeZone")
-            
+
             self.can.create_line(codeZoneExtr[(i+1)%scze][0], codeZoneExtr[(i+1)%scze][1],
                                  zone2Extr[i][0], zone2Extr[i][1],
                                  fill = c, width = w,
@@ -434,7 +934,7 @@ class GraphicalInterpretor(InterpreteurPiet):
                                  zone2Extr[i][0], zone2Extr[i][1],
                                  fill = c, width = w,
                                  tags = "codeZone")
- 
+
 
         #Zone 3: Stack
         self.can.create_text(stack.getX() + stack.getSizeX()/2,
@@ -477,473 +977,10 @@ class GraphicalInterpretor(InterpreteurPiet):
                              text = self.output.output, tags = ("output", "outputText"),
                              font = ('Georgia 10 bold'))
 
-        ZoneGraphism.arrow(self.can, outputZone.underZones[-1].underZones[0], (0, -1),
+        GraphicZone.arrow(self.can, outputZone.underZones[-1].underZones[0], (0, -1),
                            "scrollBarUp")
-        ZoneGraphism.arrow(self.can, outputZone.underZones[-1].underZones[1], (0, 1),
-                           "scrollBarDown")        
-        
-
-    def scroll(self, direction):
-        #Si un des deux boutons de la scrollBar est pressé:
-        #*** Saute une ligne ou la remet dans l'output
-        self.firstLine += direction
-        if (self.firstLine < 0):
-            self.firstLine = 0
-            return
-        self.majOutput()
-
-
-    def pauseMode(self):
-        if (self.pause.get() == 0):
-            self.pause.set(1)
-            self.mode = "pause"
-
-        else:
-            self.pause.set(0)
-            self.mode = "normal"
-
-    def newSpeed(self, event):
-        self.speed = self.respeed.get()
-
-    def waitReturn(self, v):
-        if (self.main is not None):
-            self.main.fen.wait_variable(v)
-        else:
-            self.fen.wait_variable(v)
-
-    def cleanGrid(self):
-        g = self.grille.getGrille()
-        for i in range(len(g)):
-            for j in range(len(g[0])):
-                self.grille.grille[i][j].couleur = Couleur.reconvertColor(g[i][j].getCouleur())
-
-
-    def validInput(self, event = None):
-        value = self.inp.get()
-
-        if ((value != "") and ((self.mode == "in(num)") or (self. mode == "in(char)"))):
-            if (self.mode == "in(num)"):
-                if not (value.isnumeric()):
-                    return
-
-            elif (self.mode == "in(char)"):
-                if (value.isnumeric() or (len(value) > 1)):
-                    return
-
-            self.goodInput.set(True)
-            self.stack.inValid(value)
-            return
-        return
-
-    def majCodelLector(self, codel):
-        x, y = codel.getX(), codel.getY()
-        zone = self.zone2.underZones[0].underZones[x + y*len(self.grille.grille[0])]
-        cx, cy = zone.getCenter()[0], zone.getCenter()[1]
-
-        self.can.delete("codelPointer")
-        ZoneGraphism.arrow(self.can, zone, self.dp.direction_actuelle())
-
-
-    def majOutput(self):        
-        self.can.delete("outputText")
-        nbl = len(self.output.lines)
-        if (self.firstLine >= nbl):
-            return
-        
-        outputZone = self.zone3.underZones[2].underZones[-2]
-
-        nbLines = len(self.output.lines)
-        nbLinesForOutput = 10
-        if ((nbl - self.firstLine) < 10):
-            nbLinesForOutput = (nbl - self.firstLine)
-            if (nbLinesForOutput < 0):
-                nbLinesForOutput = 0
-
-        elif (nbl < 10):
-            nbLinesForOutput = nbl
-
-        firstLine = self.firstLine
-            
-        nbCarPerLine = self.output.nbCarPerLine
-        ncar = self.output.carNumber()
-
-        for i in range(nbLinesForOutput):
-            addy = i*outputZone.getSizeY()/10
-            for j in range(nbCarPerLine):
-                addx = j*outputZone.getSizeX()/nbCarPerLine
-                self.can.create_text(
-                    outputZone.getX() + addx + outputZone.getPax()/2,
-                    outputZone.getY() + addy + outputZone.getPay()/2,
-                    text = self.output.lines[firstLine + i][j],
-                    tags = "outputText",
-                    font = 'Georgia 15 bold')
-
-    def majStack(self):
-        self.can.delete("stackValue")
-        stackZone = self.zone3.underZones[0].underZones[0]
-
-        p1 = []
-        i = 0
-        while not (self.stack.empty() or i == (self.nbElementsInStack)):
-            p1.append(self.stack.pop())
-
-            zone = stackZone.underZones[i]
-            self.can.create_text(zone.getX() + zone.getSizeX()/2,
-                                 zone.getY() + zone.getSizeY()/2,
-                                 text = str(p1[-1]), tags = "stackValue",
-                                 font = 'Georgia 10 bold')
-            i += 1
-
-        for i in range(len(p1)):
-            self.stack.empile(p1[-1 -i])
-
-
-    def _export(self):
-        # Demander à l'utilisateur de choisir un emplacement pour enregistrer le fichier
-        fichier_destination = filedialog.asksaveasfilename(defaultextension=".txt",
-                                                filetypes=[("Fichiers texte", "*.txt"),
-                                                ("Tous les fichiers", "*.*")])
-
-        # Écrire des données dans le fichier (ici un exemple avec une chaîne de texte)
-        if fichier_destination:
-            with open(fichier_destination, "w") as fichier:
-                for line in self.grille.getGrille():
-                    for cellule in line:
-                        couleur = cellule.getCouleur()
-                        fichier.write(str(couleur.getCouleur()))
-                        fichier.write(str(couleur.getLuminosite()))
-
-                    fichier.write(chr(10))
-
-        self.programmName = os.path.basename(fichier_destination)[:-4] #txt en moins
-
-        if (self.main != None):
-            self.main.rename(self.programmName)
-
-    def countMinus(self, txt):
-        s = 0
-        for i in range(len(txt)):
-            if (txt[i] == '-'):
-                s += 1
-        return s
-
-    def _import(self):
-        # Demander à l'utilisateur de choisir un fichier à importer
-        fichier_source = filedialog.askopenfilename(filetypes=[("Fichiers texte", "*.txt"),
-                                                   ("Tous les fichiers", "*.*")])
-
-        # Lire les données du fichier sélectionné (ici un exemple de lecture)
-        if fichier_source:
-            self.programmName = os.path.basename(fichier_source)[:-4] #txt en moins
-
-            if (self.main != None):
-                self.main.rename(self.programmName)
-            
-            fichier = open(fichier_source, "r")
-            t = fichier.readlines()
-            for c in range(len(t)):
-                t[c] = t[c][:-1]
-
-            x = len(t[-1])//2
-            if ('-' in t[-1]):
-                s = self.countMinus(t[-1])
-                x = (len(t[-1]) - s)//2
-
-            y = len(t)
-            g = Grille(x, y)
-            nbMoins = 0
-            for ligne in range(len(g.grille)):
-                nbMoins = 0
-                for colonne in range(len(g.grille[ligne])):
-                    w1 = t[ligne][colonne*2 + nbMoins]
-                    if (w1 == '-'):
-                        w1 = t[ligne][colonne*2 + nbMoins] + t[ligne][colonne*2 + nbMoins + 1]
-                        nbMoins += 1
-
-                    w2 = t[ligne][colonne*2 + nbMoins + 1]
-                    if (w2 == '-'):
-                        w2 = t[ligne][colonne*2 + nbMoins + 1] + t[ligne][colonne*2 + nbMoins + 2]
-                        nbMoins += 1
-                        
-                    g.grille[ligne][colonne] = Cellule(Couleur(int(w1), int(w2)),
-                                                               colonne, ligne)
-                    
-
-            for ligne in range(len(g.grille)):
-                for colonne in range(len(g.grille[ligne])):
-                    g.grille[ligne][colonne].chercheVoisins(g)
-
-            fichier.close()
-
-            self.grille = g
-
-            self.reinit()
-            self.can.delete("codeZone")
-            self.grille = g
-
-            self.codeZone.underZones = []
-            self.makeCodeZone(self.codeZone)
-            self.colorZone(self.zone2)
-
-
-
-    def chosenWidget(self, event):
-        widgetZone = self.zone1.underZones[1]
-
-        for i in range(len(widgetZone.underZones)):
-            self.can.itemconfigure(widgetZone.underZones[i].graphicZone, fill = "plum3")
-
-        x = int((event.x - widgetZone.getX())*self.nbDrawingWidgets/widgetZone.getSizeX())
-        self.can.itemconfigure(widgetZone.underZones[x].graphicZone,
-                               fill = "white smoke")
-
-        self.mode = self.convertIntoMode(x)
-        if (self.mode == "start"):
-            self.reinit()
-            self.lecture(self.grille, self.grille.getCellule(0, 0))
-
-        if (self.mode == "reset"):
-            self.reset()
-
-        if (self.mode == "pause"):
-            self.pauseMode()
-
-        if (self.mode == "import"):
-            self._import()
-
-        if (self.mode == "export"):
-            self._export()
-
-
-    def reinit(self):
-        self.programmName = "Unamed"
-        self.allBlocks = []
-        self.mode = "single"
-        self.actualColor = Couleur(7, 0)
-        self.dp.reinit()
-        self.cc.reinit()
-        self.ordonnateur = Ordonnateur(self.cmd)
-        #self.ordonnateur.change_cmd(Couleur(-1, -1))
-        self.stack.reinit()
-        self.output.reinit()
-        self.majOutput()
-        self.majStack()
-
-    def reset(self, x = 5, y = 5):
-        gx, gy = self.sizeCodeX.get(), self.sizeCodeY.get()
-        x = int(gx) if gx.isnumeric() else x
-        y = int(gy) if gy.isnumeric() else y
-
-        self.reinit()
-        self.can.delete("codeZone")
-        self.grille = Grille(x, y)
-        for line in self.grille.getGrille():
-            for column in line:
-                column.chercheVoisins(self.grille)
-
-        self.codeZone.underZones = []
-        self.makeCodeZone(self.codeZone)
-        self.colorZone(self.zone2)
-
-        codeZone = self.codeZone
-
-        ########## décorations ##########
-        codeZoneExtr = [(codeZone.getX(), codeZone.getY()),
-                        (codeZone.getEndX(), codeZone.getY()),
-                        (codeZone.getEndX(), codeZone.getEndY()),
-                        (codeZone.getX(), codeZone.getEndY())]
-        
-        zone2Extr = [(self.zone2.getX(), self.zone2.getY()),
-                     (self.zone2.getEndX(), self.zone2.getY()),
-                     (self.zone2.getEndX(), self.zone2.getEndY()),
-                     (self.zone2.getX(), self.zone2.getEndY())]
-
-        scze = len(codeZoneExtr)
-        w = 2
-        c = "black"
-        for i in range(len(codeZoneExtr)):
-            self.can.create_line(codeZoneExtr[i][0], codeZoneExtr[i][1],
-                                 zone2Extr[i][0], zone2Extr[i][1],
-                                 fill = c, width = w,
-                                 tags = "codeZone")
-            
-            self.can.create_line(codeZoneExtr[(i+1)%scze][0], codeZoneExtr[(i+1)%scze][1],
-                                 zone2Extr[i][0], zone2Extr[i][1],
-                                 fill = c, width = w,
-                                 tags = "codeZone")
-
-            self.can.create_line(codeZoneExtr[(i-1)%scze][0], codeZoneExtr[(i-1)%scze][1],
-                                 zone2Extr[i][0], zone2Extr[i][1],
-                                 fill = c, width = w,
-                                 tags = "codeZone")
-        ################################################################################
-
-        if (self.main != None):
-            lc = self.main.lastCode
-            self.main.programms[lc].grid = self.grille
-            self.main.programms[lc].stack = self.stack
-            self.main.programms[lc].output = self.output
-
-
-
-    def convertIntoMode(self, x):
-        if (x == 0):
-            return "single"
-
-        if (x == 1):
-            return "recursive"
-
-        if (x == 3):
-            return "reset"
-
-        if (x == 4):
-            return "stop"
-
-        if (x == 5):
-            return "pause"
-
-        if (x == 6):
-            return "import"
-
-        if (x == 7):
-            return "export"
-
-        return "start"
-
-    def changeCmdInTab(self, event):
-        zone = self.whatZoneIsChoosed(event.x, event.y)
-        if (zone is None):
-            return
-
-        y, x = zone//len(self.ordonnateur.colorTab[0]), zone%len(self.ordonnateur.colorTab[0])
-        if (zone != -1 and zone != -2):
-            color = self.ordonnateur.colorTab[y][x]
-
-        else:
-            color = Couleur(zone, zone)
-
-        if (color == None):
-            return
-
-        self.ordonnateur.change_cmd(color)
-        self.actualColor = color
-
-        self.can.delete("cmd")
-
-        graphicalTab = self.zone1.underZones[2]
-        cmdTab = self.ordonnateur.cmdTab
-        l, h = len(cmdTab), len(cmdTab[0])
-        i = -1
-        for zone in range(h*l):
-            if (zone%h == 0):
-                i += 1
-
-            txt = cmdTab[i][zone%h][1]
-            txt = "" if (txt == "None") else txt
-            self.can.create_text(graphicalTab.underZones[zone].getCenter()[0],
-                                 graphicalTab.underZones[zone].getCenter()[1],
-                                 text = "" if Couleur.notACouleur(color) else txt,
-                                 tags = ("cmd", "colorTab"))
-
-        self.can.tag_bind("colorTab", "<Button-1>", self.changeCmdInTab)
-
-    def colorZoneCodel(self, event):
-        if ((self.mode == "single") or (self.mode == "recursive")):
-            codel, z = self.whatCodeZoneIsChoosed(event.x, event.y)
-
-            color = self.actualColor.convertCouleurToHexa()
-            self.can.itemconfigure(codel.graphicZone, fill = color)
-            codel.color = self.actualColor
-            x = z%len(self.grille.grille[0])
-            y = z//len(self.grille.grille[0])
-            caseColor = self.grille.grille[y][x].getCouleur()
-            self.grille.grille[y][x].change_couleur(self.actualColor)
-
-            if (self.mode == "recursive"):
-                self.cascadeColor(caseColor, self.grille.getCellule(y, x), [])
-
-    def cascadeColor(self, color, origin, visites = []):
-        visites.append(origin)
-        origin.change_couleur(self.actualColor)
-
-        actualColor = self.actualColor.convertCouleurToHexa()
-
-        zone = self.zone2.underZones[0].underZones[origin.getX() + origin.getY()*len(self.grille.grille[0])]
-        self.can.itemconfigure(zone.graphicZone, fill = actualColor)
-        zone.color = actualColor
-
-        for v in origin.voisins:
-            if (v not in visites) and (Couleur.sameColor(color, v.getCouleur())):
-                self.cascadeColor(color, v, visites)
-
-
-
-    def whatCodeZoneIsChoosed(self, x, y):
-        codeTable = self.zone2.underZones[0]
-        sx = len(self.grille.grille[0])
-        sy = len(self.grille.grille)
-        z = int((x - codeTable.getX())*sx/(codeTable.getSizeX()))
-        z += int((y - codeTable.getY())*sy/(codeTable.getSizeY()))*sx
-        z = int(z)
-        return (codeTable.underZones[z], z)
-
-
-    def whatZoneIsChoosed(self, x, y):
-        zone = None
-        colorTab = self.zone1.underZones[2]
-        size = len(colorTab.underZones)
-        for z in range(size):
-            self.can.itemconfigure(colorTab.underZones[z].graphicZone,
-                                   fill = colorTab.underZones[z].color)
-            if Zone.inZone(colorTab.underZones[z], x, y):
-                zone = z
-
-        if (zone is None):
-            return None
-
-        self.can.itemconfigure(colorTab.underZones[zone].graphicZone, fill = "gray73")
-
-        return (zone if (zone < (size - 2)) else (zone - size))
-
-    def makeCodeZone(self, codeZone):
-        sx, sy = len(self.grille.getRow(0)), len(self.grille.getGrille())
-        ssx, ssy = codeZone.getSizeX()/sx, codeZone.getSizeY()/sy
-        for row in range(sy):
-            for column in range(sx):
-                codeZone.addZone(TouchableZone((column*ssx, row*ssy), (ssx, ssy),
-                                self.grille.getCellule(row, column).getCouleur(),
-                                               command = self.colorZoneCodel,
-                                               tags = "codeZone"))
-
-
-    def colorZone(self, zone, bg = -1):
-        if (bg < 0):
-            zone.creaZone(self.can)
-
-        for i in range(len(zone.underZones)):
-            self.colorZone(zone.underZones[i], bg - 1)
-
-    def keyboardEvents(self, event):
-        touche = event.keysym
-        if touche == "Escape":
-            self.quit()
-
-    def quit(self, event = None):
-        if (self.main != None):
-            self.main.canQuit = True
-
-            if not self.launched:
-                self.main.programms[self.programmToChange].setGrid(self.grille)
-                self.main.majCodeZone()
-                self.fen.destroy()
-
-
-            else:
-                self.fen.destroy()
-                self.main.programms[self.programmToChange].setStack(self.stack)
-                self.main.programms[self.programmToChange].setOutput(self.output)
-                self.main.launch(self.programmToChange + 1)
-                
+        GraphicZone.arrow(self.can, outputZone.underZones[-1].underZones[1], (0, 1),
+                           "scrollBarDown")
 
 
 if __name__ == "__main__":
