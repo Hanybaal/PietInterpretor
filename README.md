@@ -19,7 +19,8 @@ en entrée celui du 1er programme.
 
 
 Prochain(e)s mises à jour / Patchs envisagé(e)s:
-- Faire des thèmes de couleur pour l'Interpréteur Graphique
+- Faire des thèmes de couleur pour l'Interpréteur Graphique (MAJ des Sets)
+	* Enregistrement des préférences de Sets
 - Refactor du code (amélioration de la structure des classes,
   remplacement du français par l'anglais, variables privées...)
 - Ajout de nouvelles couleurs qui seraient des programmes pré-codés

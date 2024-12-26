@@ -36,6 +36,12 @@ class GraphicalInterpretor(PietInterpretor):
         self.fen.bind('<Key>', self.keyboardEvents)
 
         self.codeZone = None
+
+        #Cette liste de base sera changée lorsque les préférences de Sets seront
+        #implémentées. De plus, cela peut être modifié si une mise à jour sur
+        #le nombre de teintes est effectuée.
+        self.leftColors = [-3, -4, -5]
+        self.unfold = False
         self.nbDrawingWidgets = 8
         self.nbElementsInStack = 10
         self.actualColor = Color(7, 0)
@@ -455,7 +461,13 @@ class GraphicalInterpretor(PietInterpretor):
         if (selectedSet is None):
             return
 
-        #On a sélectionné le menu déroulant d'une des couleurs        
+        #On a sélectionné le menu déroulant d'une des couleurs
+        if (self.unfold):
+            self.unfold = False
+            self.can.delete("unfoldedColors")
+            return
+
+        self.unfold = True
         print(selectedSet.getColor())
 
     def scroll(self, direction):
@@ -743,17 +755,18 @@ class GraphicalInterpretor(PietInterpretor):
             for j in range(3):  
                 newSetsTab.addZone(TouchableZone((i*pas + j*(pas - pas/5)/3, 0),
                                                  ((pas - pas/5)/3, pah),
-                                   Color(-5, j + 1).convertColorToHexa(),
+                                   Color(i + 1, j + 1).convertColorToHexa(),
                                    tags = "newSetsTabColor",
                                    command = self.changeSetColor))
 
         i = -1
         for couleur in self.ordonnateur.colorTab[:-2]:
             i += 1
-            newSetsTab.addZone(TouchableZone((i*pas + pas - pas/5, 0), (pas/5, pah),
+            newSetsTab.addZone(TouchableZone((i*pas + pas - pas/5, 0), (pas/5, pah/2),
                                "#FFFFFF",
                                tags = "newSetsTabLst",
                                command = self.changeSetColor))
+            uz = newSetsTab.underZones[-1]
             
 
         #Tableau des couleurs
@@ -785,8 +798,6 @@ class GraphicalInterpretor(PietInterpretor):
                                        (colorTab.getSizeX()/2, pah), "#000000",
                                         tags = "colorTab",
                                         command = self.changeCmdInTab))
-
-
 
         #Zone 2:
         #* Code
@@ -962,6 +973,16 @@ class GraphicalInterpretor(PietInterpretor):
                              self.zone1.getEndY() - self.zone1.getPay()*1.5,
                              text = "Hauteur", font = ('Georgia 10'))
 
+
+        #Zone 1: flèches des listes déroulantes
+        i = -1
+        for couleur in self.ordonnateur.colorTab[:-2]:
+            i += 1
+            uz = newSetsTab.underZones[-len(self.ordonnateur.colorTab) + 2 + i]
+            self.can.create_line(uz.getX() + uz.getPax()*2, uz.getY() + uz.getPay()*2,
+                                 uz.getEndX() - uz.getSizeX()/2, uz.getPay()*7,
+                                 uz.getEndX() - uz.getPax()*2, uz.getY() + uz.getPay()*2,
+                                 width = 3, tags = "newSetsTabLst")
 
         #Zone 2: décorations
         codeZoneExtr = [(codeZone.getX(), codeZone.getY()),
