@@ -13,7 +13,8 @@ class Color():
 
     #Fonctions liées à l'interpréteur en lui-même
     def notAColor(couleur):
-        return ((couleur.getColor() < 0) and (couleur.getLuminosity() < 0))
+        return ((couleur.getColor() < -9) and (couleur.getLuminosity() < 0) and
+                (couleur.getColor() > 9))
 
     def reconvertColor(couleur):
         if (couleur.getColor() == -1):
@@ -57,7 +58,16 @@ class Color():
                         "70" : "#FFFFFF",
                         "80" : "#000000",
                         "-2-2" : "#FFFFFF",
-                        "-1-1" : "#000000"}
+                        "-1-1" : "#000000",
+                        "-31" : "#DE9500",
+                        "-32" : "#BD7500",
+                        "-33" : "#9C5500",
+                        "-41" : "#75CEB0",
+                        "-42" : "#55ADB0",
+                        "-43" : "#358CB0",
+                        "-51" : "#FF00AA",
+                        "-52" : "#CC0088",
+                        "-53" : "#990055"}
         return (dico_convert[str(self.color) + str(self.luminosity)])
 
     def getColor(self):

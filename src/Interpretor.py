@@ -196,9 +196,8 @@ class Ordonnateur():
         couls.append(Color(8, 0))
         return couls
 
-    def genere_tab_commandes(self, couleur):
+    def genere_tab_commandes(self, x, y):
         cmd = [[], [], [], [], [], []]
-        y, x = couleur.getColor() - 1, couleur.getLuminosity() - 1
         #x2, y2 = c.x, c.y
         for i in range(6):
             for j in range(3):
@@ -209,8 +208,25 @@ class Ordonnateur():
         if (Color.notAColor(newColor)):
             self.cmdTab = [[(None, "None") for i in range(3)] for j in range(6)]
             return
-        self.cmdTab = self.genere_tab_commandes(newColor)
 
+        x, y = self.getIndexColor(newColor)
+        self.cmdTab = self.genere_tab_commandes(x, y)
+
+    def getIndexColor(self, color):
+        y = -1
+        x = -1
+
+        for line in self.colorTab[:-2]:
+            y += 1
+            x = -1
+            for col in line:
+                x += 1
+                
+                if (Color.sameColor(col, color)):
+                    return (x, y)
+                    
+        return (-1, -1)
+        
     def rotationLuminosite(self):
         for colonne in range(6):
             for ligne in range(2):

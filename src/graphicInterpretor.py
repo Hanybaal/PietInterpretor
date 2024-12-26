@@ -283,6 +283,7 @@ class GraphicalInterpretor(PietInterpretor):
         self.cc.reinit()
         self.ordonnateur = Ordonnateur(self.cmd)
         #self.ordonnateur.change_cmd(Color(-1, -1))
+        self.firstLine = 0
         self.stack.reinit()
         self.output.reinit()
         self.majOutput()
@@ -416,7 +417,7 @@ class GraphicalInterpretor(PietInterpretor):
 
     def whatZoneIsChoosed(self, x, y):
         zone = None
-        colorTab = self.zone1.underZones[2]
+        colorTab = self.zone1.underZones[-1]
         size = len(colorTab.underZones)
         for z in range(size):
             self.can.itemconfigure(colorTab.underZones[z].graphicZone,
@@ -431,9 +432,32 @@ class GraphicalInterpretor(PietInterpretor):
 
         return (zone if (zone < (size - 2)) else (zone - size))
 
+    def whatSetZoneIsChoosed(self, x, y):
+        zone = None
+        setsTab = self.zone1.underZones[-2]
+        size = len(setsTab.underZones)
+        for z in range(size):
+            self.can.itemconfigure(setsTab.underZones[z].graphicZone,
+                                   fill = setsTab.underZones[z].getColor())
+            if Zone.inZone(setsTab.underZones[z], x, y):
+                zone = z
+
+        if (zone is None):
+            return None
+
+        return setsTab.underZones[zone]
+
 ########################################################################################
 ##### Fonctions évènementielles ########################################################
 ########################################################################################
+    def changeSetColor(self, event):
+        selectedSet = self.whatSetZoneIsChoosed(event.x, event.y)
+        if (selectedSet is None):
+            return
+
+        #On a sélectionné le menu déroulant d'une des couleurs        
+        print(selectedSet.getColor())
+
     def scroll(self, direction):
         #Si un des deux boutons de la scrollBar est pressé:
         #*** Saute une ligne ou la remet dans l'output
@@ -490,7 +514,7 @@ class GraphicalInterpretor(PietInterpretor):
 
         self.can.delete("cmd")
 
-        graphicalTab = self.zone1.underZones[2]
+        graphicalTab = self.zone1.underZones[-1]
         cmdTab = self.ordonnateur.cmdTab
         l, h = len(cmdTab), len(cmdTab[0])
         i = -1
@@ -544,6 +568,9 @@ class GraphicalInterpretor(PietInterpretor):
                 self.main.programms[self.programmToChange].setStack(self.stack)
                 self.main.programms[self.programmToChange].setOutput(self.output)
                 self.main.launchGraphical(self.programmToChange + 1)
+
+        else:
+            self.fen.destroy()
 
 
 
@@ -694,18 +721,49 @@ class GraphicalInterpretor(PietInterpretor):
 
         self.zone1.addZone(drawingWidgets)
 
-        #Tableau des couleurs
+
+        #Changements de sets de couleur
         ox = drawingWidgets.getEndX() + self.zone1.getPax()
-        colorTab = Zone((ox, 0),
-                        (self.zone1.getEndX() - ox, self.zone1.getSizeY()), "blue")
+        size = len(self.ordonnateur.colorTab) - 2
+        high = len(self.ordonnateur.colorTab[0]) + 1
+        pas = (self.zone1.getEndX() - ox)/size
+        pah = (self.zone1.getSizeY() - self.zone1.getPay())/high
+
+        newSetsTab = Zone((ox, 0),
+                         (self.zone1.getEndX() - ox,
+                          self.zone1.getPay()),
+                          "blue")
+
+        self.zone1.addZone(newSetsTab)
+
+        i = -1
+        for couleur in self.ordonnateur.colorTab[:-2]:
+            i += 1
+
+            for j in range(3):  
+                newSetsTab.addZone(TouchableZone((i*pas + j*(pas - pas/5)/3, 0),
+                                                 ((pas - pas/5)/3, pah),
+                                   Color(-5, j + 1).convertColorToHexa(),
+                                   tags = "newSetsTabColor",
+                                   command = self.changeSetColor))
+
+        i = -1
+        for couleur in self.ordonnateur.colorTab[:-2]:
+            i += 1
+            newSetsTab.addZone(TouchableZone((i*pas + pas - pas/5, 0), (pas/5, pah),
+                               "#FFFFFF",
+                               tags = "newSetsTabLst",
+                               command = self.changeSetColor))
+            
+
+        #Tableau des couleurs
+        colorTab = Zone((ox, self.zone1.getPay()),
+                        (self.zone1.getEndX() - ox,
+                         self.zone1.getSizeY() - self.zone1.getPay()),
+                        "blue")
 
         self.zone1.addZone(colorTab)
 
-
-        size = len(self.ordonnateur.colorTab) - 2
-        high = len(self.ordonnateur.colorTab[0]) + 1
-        pas = colorTab.getSizeX()/size
-        pah = colorTab.getSizeY()/high
         i = -1
         j = -1
         for couleur in self.ordonnateur.colorTab[:-2]:
@@ -718,13 +776,13 @@ class GraphicalInterpretor(PietInterpretor):
                                  tags = "colorTab",
                                  command = self.changeCmdInTab))
 
-        colorTab.addZone(TouchableZone((0, colorTab.getEndY() - pah),
-                                       (colorTab.getSizeX()/2, pah), "white",
+        colorTab.addZone(TouchableZone((0, colorTab.getSizeY() - pah),
+                                       (colorTab.getSizeX()/2, pah), "#FFFFFF",
                                        tags = "colorTab",
                                        command = self.changeCmdInTab))
 
-        colorTab.addZone(TouchableZone((colorTab.getSizeX()/2, colorTab.getEndY() - pah),
-                                       (colorTab.getSizeX()/2, pah), "black",
+        colorTab.addZone(TouchableZone((colorTab.getSizeX()/2, colorTab.getSizeY() - pah),
+                                       (colorTab.getSizeX()/2, pah), "#000000",
                                         tags = "colorTab",
                                         command = self.changeCmdInTab))
 
