@@ -505,8 +505,27 @@ class GraphicalInterpretor(PietInterpretor):
             self.can.itemconfigure(stcc.graphicZone, fill = stcc.getColor())
             self.can.itemconfigure(setToChangeInTab.graphicZone, fill = stcc.getColor())
 
-        #Pour unfold
+        #Modifie les couleurs dans le code
+        self.changeColorsInCode(colorToChange, changedColor)
+
+        #Pour unfold la liste déroulante des sets
         self.getNewSets(None)
+
+    def changeColorsInCode(self, colToChange : int, replacingColor : int):
+        i, j = -1, -1
+        for line in self.grille.getGrid():
+            i += 1
+            j = -1
+            for col in line:
+                j += 1
+                if (col.getColor().getColor() == colToChange):
+                    newColor = Color(replacingColor, col.getColor().getLuminosity())
+                    indexCodelToChange = i*len(self.grille.getGrid()[i]) + j
+                    codelToChange = self.codeZone.underZones[indexCodelToChange]
+                    
+                    col.change_couleur(newColor)
+                    self.can.itemconfigure(codelToChange.graphicZone,
+                                           fill = col.getColor().convertColorToHexa())
 
     def getNewSets(self, event):
         if (self.unfold):
