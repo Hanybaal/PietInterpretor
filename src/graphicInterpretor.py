@@ -41,6 +41,7 @@ class GraphicalInterpretor(PietInterpretor):
         #implémentées. De plus, cela peut être modifié si une mise à jour sur
         #le nombre de teintes est effectuée.
         self.leftColors = [-3, -4, -5]
+        self.setsZone = None
         self.unfold = False
         self.nbDrawingWidgets = 8
         self.nbElementsInStack = 10
@@ -88,6 +89,7 @@ class GraphicalInterpretor(PietInterpretor):
             return
 
         self.majCodelLector(codel)
+
         couleur = codel.getColor()
         commande = self.ordonnateur.actualCommand(couleur)
         nom = self.ordonnateur.actualCommandName(couleur)
@@ -287,7 +289,9 @@ class GraphicalInterpretor(PietInterpretor):
         self.actualColor = Color(7, 0)
         self.dp.reinit()
         self.cc.reinit()
+        changedColorTab = list(self.ordonnateur.colorTab)
         self.ordonnateur = Ordonnateur(self.cmd)
+        self.ordonnateur.colorTab = changedColorTab
         #self.ordonnateur.change_cmd(Color(-1, -1))
         self.firstLine = 0
         self.stack.reinit()
@@ -443,8 +447,22 @@ class GraphicalInterpretor(PietInterpretor):
         setsTab = self.zone1.underZones[-2]
         size = len(setsTab.underZones)
         for z in range(size):
-            self.can.itemconfigure(setsTab.underZones[z].graphicZone,
-                                   fill = setsTab.underZones[z].getColor())
+            if Zone.inZone(setsTab.underZones[z], x, y):
+                zone = z
+
+        if (zone is None):
+            return (None, -1)
+
+        return (setsTab.underZones[zone], zone)
+
+    def whatSetIsChoosed(self, x, y):
+        zone = None
+        setsTab = self.setsZone
+        if (setsTab is None):
+            return None
+        
+        size = len(setsTab.underZones)
+        for z in range(size):
             if Zone.inZone(setsTab.underZones[z], x, y):
                 zone = z
 
@@ -452,24 +470,86 @@ class GraphicalInterpretor(PietInterpretor):
             return None
 
         return setsTab.underZones[zone]
-
 ########################################################################################
 ##### Fonctions évènementielles ########################################################
 ########################################################################################
-    def changeSetColor(self, event):
-        selectedSet = self.whatSetZoneIsChoosed(event.x, event.y)
-        if (selectedSet is None):
-            return
+    def changeSet(self, event):
+        x, y = event.x, event.y
+        newSet = self.whatSetIsChoosed(x, y)
 
-        #On a sélectionné le menu déroulant d'une des couleurs
+        setToChange = self.zone1.underZones[-2].underZones[self.setToChange]
+
+        cc = Color.convertHexaToColor(newSet.underZones[0].getColor())
+        ctc = Color.convertHexaToColor(setToChange.underZones[0].getColor())
+        if ('-' in cc):
+            changedColor = int(cc[:2])
+        else:
+            changedColor = int(cc[0])
+
+        if ('-' in ctc):
+            colorToChange = int(ctc[:2])
+        else:
+            colorToChange = int(ctc[0])
+            
+        self.leftColors[self.leftColors.index(changedColor)] = colorToChange
+        
+        for i in range(3):
+            setToChangeInTab = self.zone1.underZones[-1].underZones[self.setToChange*3 + i]
+            stcc = setToChange.underZones[i]
+
+            newCol = newSet.underZones[i].getColor()
+            stcc.color = newCol
+            setToChangeInTab.color = newCol
+            self.ordonnateur.colorTab[self.setToChange][i] = Color(changedColor, i + 1)
+            
+            self.can.itemconfigure(stcc.graphicZone, fill = stcc.getColor())
+            self.can.itemconfigure(setToChangeInTab.graphicZone, fill = stcc.getColor())
+
+        #Pour unfold
+        self.getNewSets(None)
+
+    def getNewSets(self, event):
         if (self.unfold):
             self.unfold = False
             self.can.delete("unfoldedColors")
             return
+        
+        (selSet, z) = self.whatSetZoneIsChoosed(event.x, event.y)
+
+        if (selSet is None):
+            return
 
         self.unfold = True
-        print(selectedSet.getColor())
+        self.setToChange = z
 
+        #Le unfold rajoute un tableau graphique temporaire contenant les Sets de
+        #couleurs non utilisées
+        #0) Création d'une zone d'accueil supprimable pour les sets
+        self.setsZone = Zone((selSet.getX(), selSet.getEndY()),
+                        (selSet.getSizeX(), selSet.getSizeY()*len(self.leftColors)),
+                        "green")
+
+        #1) Ligne avec les couleurs déjà en place déjà présente
+        
+
+        #2) Lignes avec les couleurs restantes
+        nbLeftColors = len(self.leftColors)
+        for i in range(nbLeftColors):
+            self.setsZone.addZone(Zone((0, self.setsZone.getSizeY()/nbLeftColors*i),
+                                  (self.setsZone.getSizeX(),
+                                   self.setsZone.getSizeY()/nbLeftColors),
+                                  "yellow"))
+            
+            setZone = self.setsZone.underZones[-1]
+            for j in range(3):
+                setZone.addZone(TouchableZone(
+                    (setZone.getSizeX()/3*j, 0),
+                    (setZone.getSizeX()/3, setZone.getSizeY()),
+                    color = Color(self.leftColors[i], j + 1),
+                    command = self.changeSet, tags = "unfoldedColors"))
+
+        self.colorZone(self.setsZone, tags = "unfoldedColors")
+        
     def scroll(self, direction):
         #Si un des deux boutons de la scrollBar est pressé:
         #*** Saute une ligne ou la remet dans l'output
@@ -585,8 +665,6 @@ class GraphicalInterpretor(PietInterpretor):
             self.fen.destroy()
 
 
-
-
 ########################################################################################
 ########################################################################################
 ########################################################################################
@@ -620,12 +698,12 @@ class GraphicalInterpretor(PietInterpretor):
                                                command = self.colorZoneCodel,
                                                tags = "codeZone"))
 
-    def colorZone(self, zone, bg = -1):
+    def colorZone(self, zone, bg = -1, tags = "zone"):
         if (bg < 0):
-            zone.creaZone(self.can)
+            zone.creaZone(self.can, tags = tags)
 
         for i in range(len(zone.underZones)):
-            self.colorZone(zone.underZones[i], bg - 1)
+            self.colorZone(zone.underZones[i], bg - 1, tags)
 
     def cleanGrid(self):
         g = self.grille.getGrid()
@@ -695,6 +773,7 @@ class GraphicalInterpretor(PietInterpretor):
         for i in range(len(p1)):
             self.stack.empile(p1[-1 -i])
 
+    #370
     def widgets(self):
         self.can = tk.Canvas(self.fen, bg = "light blue", height = self.size2,
                               width = self.size1)
@@ -748,24 +827,31 @@ class GraphicalInterpretor(PietInterpretor):
 
         self.zone1.addZone(newSetsTab)
 
+        uz = None
         i = -1
         for couleur in self.ordonnateur.colorTab[:-2]:
             i += 1
+            newSetsTab.addZone(Zone((i*pas, 0),
+                                    (pas, newSetsTab.getSizeY()), "blue"))
+            uz = newSetsTab.underZones[-1]
 
             for j in range(3):  
-                newSetsTab.addZone(TouchableZone((i*pas + j*(pas - pas/5)/3, 0),
-                                                 ((pas - pas/5)/3, pah),
-                                   Color(i + 1, j + 1).convertColorToHexa(),
-                                   tags = "newSetsTabColor",
-                                   command = self.changeSetColor))
+                uz.addZone(TouchableZone(
+                    (uz.getSizeX()/4*j, 0),
+                    (uz.getSizeX()/4, uz.getSizeY()),
+                    Color(i + 1, j + 1).convertColorToHexa(),
+                    tags = "newSetsTabColor",
+                    command = self.getNewSets))
 
         i = -1
         for couleur in self.ordonnateur.colorTab[:-2]:
             i += 1
-            newSetsTab.addZone(TouchableZone((i*pas + pas - pas/5, 0), (pas/5, pah/2),
-                               "#FFFFFF",
-                               tags = "newSetsTabLst",
-                               command = self.changeSetColor))
+            uz = newSetsTab.underZones[i]
+            uz.addZone(TouchableZone(
+                       (uz.getSizeX()*3/4, 0),
+                       (uz.getSizeX()/4, uz.getSizeY()),
+                       "#FFFFFF", tags = "newSetsTabLst",
+                       command = self.getNewSets))
             uz = newSetsTab.underZones[-1]
             
 
@@ -816,8 +902,7 @@ class GraphicalInterpretor(PietInterpretor):
         #Lignes et colonnes du code selon la taille de la grille
         self.makeCodeZone(codeZone)
         self.codeZone = codeZone
-
-
+        
 
         #Zone 3:
         #* Stack
@@ -978,7 +1063,7 @@ class GraphicalInterpretor(PietInterpretor):
         i = -1
         for couleur in self.ordonnateur.colorTab[:-2]:
             i += 1
-            uz = newSetsTab.underZones[-len(self.ordonnateur.colorTab) + 2 + i]
+            uz = newSetsTab.underZones[i].underZones[3]
             self.can.create_line(uz.getX() + uz.getPax()*2, uz.getY() + uz.getPay()*2,
                                  uz.getEndX() - uz.getSizeX()/2, uz.getPay()*7,
                                  uz.getEndX() - uz.getPax()*2, uz.getY() + uz.getPay()*2,

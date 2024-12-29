@@ -221,10 +221,10 @@ class Ordonnateur():
             x = -1
             for col in line:
                 x += 1
-                
+
                 if (Color.sameColor(col, color)):
                     return (x, y)
-                    
+              
         return (-1, -1)
         
     def rotationLuminosite(self):
@@ -237,7 +237,6 @@ class Ordonnateur():
             for colonne in range(5):
                 self.swap(ligne, colonne, ligne, -1)
 
-
     def swap(self, i1, j1, i2, j2):
         t = self.cmdTab
         t[i1][j1], t[i2][j2] = t[i2][j2], t[i1][j1]
@@ -246,15 +245,16 @@ class Ordonnateur():
         if (couleur.isWhite()):
             return None
 
-        x = couleur.getLuminosity() - 1
-        y = couleur.getColor() - 1
+        x, y = self.getIndexColor(couleur)
+
         return self.cmdTab[y][x][0]
 
     def actualCommandName(self, couleur):
         if (couleur.isWhite()):
             return "None"
-        x = couleur.getLuminosity() - 1
-        y = couleur.getColor() - 1
+
+        x, y = self.getIndexColor(couleur)
+                
         return self.cmdTab[y][x][1]
 
     def printCmd(self):

@@ -28,6 +28,40 @@ class Color():
     def sameColor(c1, c2):
         return ((c1.getColor() == c2.getColor()) and (c1.getLuminosity() == c2.getLuminosity()))
 
+    def convertHexaToColor(color : str) -> str:
+        dico_convert = {"#FFC0C0" : "11",
+                        "#FF0000" : "12",
+                        "#C00000" : "13",
+                        "#FFFFC0" : "21",
+                        "#FFFF00" : "22",
+                        "#C0C000" : "23",
+                        "#C0FFC0" : "31",
+                        "#00FF00" : "32",
+                        "#00C000" : "33",
+                        "#C0FFFF" : "41",
+                        "#00FFFF" : "42",
+                        "#00C0C0" : "43",
+                        "#C0C0FF" : "51",
+                        "#0000FF" : "52",
+                        "#0000C0" : "53",
+                        "#FFC0FF" : "61",
+                        "#FF00FF" : "62",
+                        "#C000C0" : "63",
+                        "#FFFFFF" : "70",
+                        "#000000" : "80",
+                        "#FFFFFF" : "-2-2",
+                        "#000000" : "-1-1",
+                        "#DE9500" : "-31",
+                        "#BD7500" : "-32",
+                        "#9C5500" : "-33",
+                        "#75CEB0" : "-41",
+                        "#55ADB0" : "-42",
+                        "#358CB0" : "-43",
+                        "#FF00AA" : "-51",
+                        "#CC0088" : "-52",
+                        "#990055" : "-53"}
+        return (dico_convert[str(color)])
+
     def __init__(self, couleur :  int, luminosite: int):
         self.color = couleur
         self.luminosity = luminosite

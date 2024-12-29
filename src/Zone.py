@@ -46,11 +46,11 @@ class Zone():
     def getColor(self):
         return self.color
 
-    def creaZone(self, can):
+    def creaZone(self, can, tags = "zone"):
         self.graphicZone = can.create_rectangle(self.getX(), self.getY(),
                              self.getEndX(), self.getEndY(),
                              fill = self.getColor(),
-                             tags = "zone")
+                             tags = tags)
 
 
 class TouchableZone(Zone):
@@ -60,7 +60,7 @@ class TouchableZone(Zone):
         self.action = action
         self.tags = tags
 
-    def creaZone(self, can):
+    def creaZone(self, can, tags = "zone"):
         self.graphicZone = can.create_rectangle(self.getX(), self.getY(),
                              self.getEndX(), self.getEndY(),
                              fill = self.getColor(),
