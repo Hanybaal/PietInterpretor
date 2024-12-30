@@ -62,11 +62,37 @@ class GraphicalInterpretor(PietInterpretor):
         self.isLast = isLast
         if (launched):
             self.speed = 1
-            self.lecture(self.grille, self.grille.getCellule(0, 0))
+            self.preLecture(self.grille, self.grille.getCellule(0, 0))
 
         self.fen.mainloop()
 
+    def preLecture(self, grille, codel, nbEchecs = 0):
+        if (self.setsNotOkWithCode()):
+            finfo = tk.Toplevel(self.fen)
+            finfo.title("Attention!! Vos sets de couleur ne corespondent pas avec le code!!")
+            y = 30
+            x = int(self.size1/2.5)
+            finfo.geometry(str(x) + "x" + str(y) + "+" + str(int(x/2)) + "+" + str(int(self.size2/2 - y/2)))
+            finfo.maxsize(x, y)
+            finfo.minsize(x, y)
+            tk.Button(finfo, text = "Je corrige...",
+                      command = finfo.destroy).place(x = int(x/2), y = 0)
+            return
+        
+        self.lecture(grille, codel, nbEchecs)
+
     def lecture(self, grille, codel, nbEchecs = 0):
+        if (self.setsNotOkWithCode()):
+            finfo = tk.Toplevel(self.fen)
+            finfo.title("Attention!! Vos sets de couleur ne corespondent pas avec le code!!")
+            y = 30
+            finfo.geometry(str(int(self.size1/2)) + "x" + str(y) + "+" + str(int(self.size1/4)) + "+" + str(int(self.size2/2 - 40)))
+            finfo.maxsize(int(self.size1/2), y)
+            finfo.minsize(int(self.size1/2), y)
+            tk.Button(finfo, text = "Je corrige...",
+                      command = finfo.destroy).place(x = int(self.size1/4), y = 0)
+            return
+        
         if ((self.mode == "reset") or (self.mode == "stop")):
             self.output.reinit()
             self.majOutput()
@@ -163,6 +189,19 @@ class GraphicalInterpretor(PietInterpretor):
 ########################################################################################
 ##### Fonctions D'Etat #################################################################
 ########################################################################################
+    #Aucune mise à jour des teintes n'est prévue, on va donc ne tester que les couleurs
+    def setsNotOkWithCode(self):
+        allPossibleColors = [color[0].getColor() for color in self.ordonnateur.colorTab[:-2]]
+        actualColor = None
+        for line in self.grille.getGrid():
+            for col in line:
+                actualColor = col.getColor()
+                if ((actualColor.getColor() not in allPossibleColors) and (not actualColor.isBlack()) and (not actualColor.isWhite())):
+                    return True
+        #Si toutes les couleurs du code correspondent à des couleurs présentes
+        #dans les Sets choisis par l'utilisateur, on peut continuer
+        return False
+        
     def _export(self):
         # Demander à l'utilisateur de choisir un emplacement pour enregistrer le fichier
         fichier_destination = filedialog.asksaveasfilename(defaultextension=".txt",
@@ -591,7 +630,7 @@ class GraphicalInterpretor(PietInterpretor):
         self.mode = self.convertIntoMode(x)
         if (self.mode == "start"):
             self.reinit()
-            self.lecture(self.grille, self.grille.getCellule(0, 0))
+            self.preLecture(self.grille, self.grille.getCellule(0, 0))
 
         if (self.mode == "reset"):
             self.reset()
@@ -1138,7 +1177,6 @@ class GraphicalInterpretor(PietInterpretor):
 ##        self.validInp = tk.Button(self.fen, text = "Valider", command = self.validInput)
 ##        self.validInp.place(x = inputZone.getX() + inputZone.getSizeX()/2 + 15,
 ##                              y = inputZone.getEndY() - 5*inputZone.getPay())
-##
 
         self.can.create_text(validZone.getX() + validZone.getSizeX()/2,
                              validZone.getY() + validZone.getSizeY()/2,
