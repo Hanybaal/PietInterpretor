@@ -10,7 +10,7 @@ servent à "partager" le stack et l'output du programme auquel elles
 sont affiliées.
 
 Exemple:
-Prennons 3 programmes. Le premeier "partage" son stack (LED du haut)
+Prennons 3 programmes. Le premier "partage" son stack (LED du haut)
 et son output (LED du bas). Alors le 2eme programme héritera
 du stack et de l'output à la suite du premier programme.
 Si le 2eme programme ne partage que son output, alors le 3eme
