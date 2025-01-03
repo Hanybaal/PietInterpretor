@@ -40,7 +40,7 @@ class GraphicalInterpretor(PietInterpretor):
         #Cette liste de base sera changée lorsque les préférences de Sets seront
         #implémentées. De plus, cela peut être modifié si une mise à jour sur
         #le nombre de teintes est effectuée.
-        self.leftColors = [-3, -4, -5]
+        self.leftColors = [-3, -4, -5, -6]
         self.setsZone = None
         self.unfold = False
         self.nbDrawingWidgets = 8
@@ -676,7 +676,7 @@ class GraphicalInterpretor(PietInterpretor):
             txt = "" if (txt == "None") else txt
             self.can.create_text(graphicalTab.underZones[zone].getCenter()[0],
                                  graphicalTab.underZones[zone].getCenter()[1],
-                                 text = "" if Color.notAColor(color) else txt,
+                                 text = "" if Color.notAColorfulColor(color) else txt,
                                  tags = ("cmd", "colorTab"))
 
         self.can.tag_bind("colorTab", "<Button-1>", self.changeCmdInTab)
@@ -1202,7 +1202,6 @@ class GraphicalInterpretor(PietInterpretor):
                            "scrollBarUp")
         GraphicZone.arrow(self.can, outputZone.underZones[-1].underZones[1], (0, 1),
                            "scrollBarDown")
-
 
 if __name__ == "__main__":
     g = GraphicalInterpretor()

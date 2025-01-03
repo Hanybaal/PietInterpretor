@@ -16,6 +16,9 @@ class Color():
         return ((couleur.getColor() < -9) and (couleur.getLuminosity() < 0) and
                 (couleur.getColor() > 9))
 
+    def notAColorfulColor(couleur):
+        return (Color.notAColor(couleur) or couleur.isBlack() or couleur.isWhite())
+
     def reconvertColor(couleur):
         if (couleur.getColor() == -1):
             return Color(8, 0)
@@ -51,15 +54,18 @@ class Color():
                         "#000000" : "80",
                         "#FFFFFF" : "-2-2",
                         "#000000" : "-1-1",
-                        "#DE9500" : "-31",
+                        "#EEA500" : "-31",
                         "#BD7500" : "-32",
                         "#9C5500" : "-33",
                         "#75CEB0" : "-41",
                         "#55ADB0" : "-42",
                         "#358CB0" : "-43",
-                        "#FF00AA" : "-51",
+                        "#FF22BB" : "-51",
                         "#CC0088" : "-52",
-                        "#990055" : "-53"}
+                        "#990055" : "-53",
+                        "#44FFAA" : "-61",
+                        "#33CC88" : "-62",
+                        "#22AA55" : "-63"}
         return (dico_convert[str(color)])
 
     def __init__(self, couleur :  int, luminosite: int):
@@ -93,15 +99,18 @@ class Color():
                         "80" : "#000000",
                         "-2-2" : "#FFFFFF",
                         "-1-1" : "#000000",
-                        "-31" : "#DE9500",
+                        "-31" : "#EEA500",
                         "-32" : "#BD7500",
                         "-33" : "#9C5500",
                         "-41" : "#75CEB0",
                         "-42" : "#55ADB0",
                         "-43" : "#358CB0",
-                        "-51" : "#FF00AA",
+                        "-51" : "#FF22BB",
                         "-52" : "#CC0088",
-                        "-53" : "#990055"}
+                        "-53" : "#990055",
+                        "-61" : "#44FFAA",
+                        "-62" : "#33CC88",
+                        "-63" : "#22AA55"}
         return (dico_convert[str(self.color) + str(self.luminosity)])
 
     def getColor(self):
@@ -111,7 +120,7 @@ class Color():
         return self.luminosity
 
     def isBlack(self):
-        return (self.getColor() == 8)
+        return ((self.getColor() == 8) or (self.getColor() == -1))
 
     def isWhite(self):
-        return (self.getColor() == 7)
+        return ((self.getColor() == 7) or (self.getColor() == -2))
