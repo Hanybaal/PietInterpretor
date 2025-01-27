@@ -13,8 +13,8 @@ class Color():
 
     #Fonctions liées à l'interpréteur en lui-même
     def notAColor(couleur):
-        return ((couleur.getColor() < -9) and (couleur.getLuminosity() < 0) and
-                (couleur.getColor() > 9))
+        return ((couleur.getColor() < -50) and (couleur.getLuminosity() < 0) and
+                (couleur.getColor() > 50))
 
     def notAColorfulColor(couleur):
         return (Color.notAColor(couleur) or couleur.isBlack() or couleur.isWhite())
