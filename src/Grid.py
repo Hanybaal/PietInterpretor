@@ -29,6 +29,9 @@ class Grid():
 
     def getCellule(self, y, x):
         return self.grille[y][x]
+    
+    def setCellule(self, y, x, v):
+        self.grille[y][x] = v
 
     def maxX(self):
         return (len(self.getGrid()[0]) - 1)

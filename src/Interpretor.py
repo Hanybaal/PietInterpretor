@@ -265,22 +265,45 @@ class Ordonnateur():
 
             print(t)
 
-fichier = open("./../programmsBank/blank.txt", "r")
+def _import(pgm):
+    fichier = open(pgm, "r")
+    
+    # Lire les données du fichier sélectionné (ici un exemple de lecture)
+    t = fichier.readlines()
+    for c in range(len(t)):
+        t[c] = t[c].replace('\n', '')
 
-t = fichier.readlines()
-x = len(t[-1])//2
-y = len(t)
-g = Grid(x, y)
-for ligne in range(len(g.grille)):
-    for colonne in range(len(g.grille[ligne])):
-        g.grille[ligne][colonne] = Cellule(
-            Color(int(t[ligne][colonne*2]), int(t[ligne][colonne*2+1])), colonne, ligne)
+    ty = 0
+    while (not ("EOP" in t[ty])):
+        ty += 1
 
-for ligne in range(len(g.grille)):
-    for colonne in range(len(g.grille[ligne])):
-        g.grille[ligne][colonne].chercheVoisins(g)
+    tx = len(t[0].split(';'))
+    grid = Grid(tx, ty)
 
-fichier.close()
+    i, j = 0, -1
+    line = t[0]
+    while (not ("EOP" in t[i])):
+        line = t[i]
+        j = -1
+        splitLine = line.split(';')
+        for col in splitLine:
+            j += 1
+            color = col.split('/')
+            grid.setCellule(i, j, Cellule(Color(int(color[0]), int(color[1])), j, i))
+
+        i += 1
+
+
+    #Recherche des voisins
+    for ligne in range(len(grid.grille)):
+        for colonne in range(len(grid.grille[ligne])):
+            grid.grille[ligne][colonne].chercheVoisins(grid)
+
+    fichier.close()
+    
+    return grid
+
+g = _import("./../programmsBank/blank.txt")
 
 if __name__ == "__main__":
     i = PietInterpretor(g)

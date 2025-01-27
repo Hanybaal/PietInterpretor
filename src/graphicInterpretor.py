@@ -211,13 +211,21 @@ class GraphicalInterpretor(PietInterpretor):
         # Écrire des données dans le fichier (ici un exemple avec une chaîne de texte)
         if fichier_destination:
             with open(fichier_destination, "w") as fichier:
+                i = 0
                 for line in self.grille.getGrid():
+                    i = 0
                     for cellule in line:
                         couleur = cellule.getColor()
                         fichier.write(str(couleur.getColor()))
+                        fichier.write("/")
                         fichier.write(str(couleur.getLuminosity()))
+                        if (i < (len(line) - 1)):
+                            fichier.write(";")
+
+                        i += 1
 
                     fichier.write(chr(10))
+                fichier.write("EOP")
 
         self.programmName = os.path.basename(fichier_destination)[:-4] #txt en moins
 
@@ -246,44 +254,38 @@ class GraphicalInterpretor(PietInterpretor):
             fichier = open(fichier_source, "r")
             t = fichier.readlines()
             for c in range(len(t)):
-                t[c] = t[c][:-1]
+                t[c] = t[c].replace('\n', '')
 
-            x = len(t[-1])//2
-            if ('-' in t[-1]):
-                s = self.countMinus(t[-1])
-                x = (len(t[-1]) - s)//2
+            ty = 0
+            while (not ("EOP" in t[ty])):
+                ty += 1
 
-            y = len(t)
-            g = Grid(x, y)
-            nbMoins = 0
-            for ligne in range(len(g.grille)):
-                nbMoins = 0
-                for colonne in range(len(g.grille[ligne])):
-                    w1 = t[ligne][colonne*2 + nbMoins]
-                    if (w1 == '-'):
-                        w1 = t[ligne][colonne*2 + nbMoins] + t[ligne][colonne*2 + nbMoins + 1]
-                        nbMoins += 1
+            tx = len(t[0].split(';'))
+            grid = Grid(tx, ty)
 
-                    w2 = t[ligne][colonne*2 + nbMoins + 1]
-                    if (w2 == '-'):
-                        w2 = t[ligne][colonne*2 + nbMoins + 1] + t[ligne][colonne*2 + nbMoins + 2]
-                        nbMoins += 1
-
-                    g.grille[ligne][colonne] = Cellule(Color(int(w1), int(w2)),
-                                                               colonne, ligne)
+            i, j = 0, -1
+            while (not ("EOP" in t[i])):
+                j = -1
+                splitLine = t[i].split(';')
+                for col in splitLine:
+                    j += 1
+                    color = col.split('/')
+                    grid.setCellule(i, j, Cellule(Color(int(color[0]), int(color[1])), j, i))
+                i += 1
 
 
+            #Recherche des voisins
             for ligne in range(len(g.grille)):
                 for colonne in range(len(g.grille[ligne])):
                     g.grille[ligne][colonne].chercheVoisins(g)
 
             fichier.close()
 
-            self.grille = g
+            self.grille = grid
 
             self.reinit()
             self.can.delete("codeZone")
-            self.grille = g
+            self.grille = grid
 
             self.codeZone.underZones = []
             self.makeCodeZone(self.codeZone)
