@@ -288,11 +288,10 @@ class GraphicalInterpretor(PietInterpretor):
                     grid.setCellule(i, j, Cellule(Color(int(color[0]), int(color[1])), j, i))
                 i += 1
 
-
             #Recherche des voisins
-            for ligne in range(len(g.grille)):
-                for colonne in range(len(g.grille[ligne])):
-                    g.grille[ligne][colonne].chercheVoisins(g)
+            for ligne in range(len(grid.grille)):
+                for colonne in range(len(grid.grille[ligne])):
+                    grid.grille[ligne][colonne].chercheVoisins(grid)
 
             fichier.close()
 
@@ -821,9 +820,7 @@ class GraphicalInterpretor(PietInterpretor):
                 self.can.itemconfigure(setsZone.underZones[st].underZones[col].graphicZone,
                                        fill = color)
 
-        self.leftColors = Color.getLeftColors(self.getAllColorsFromColorTab())
-                
-        
+        self.leftColors = Color.getLeftColors(self.getAllColorsFromColorTab())      
 
     def majOutput(self):
         self.can.delete("outputText")

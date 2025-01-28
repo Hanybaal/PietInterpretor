@@ -55,6 +55,7 @@ class Cellule():
         self.color = couleur
 
     def chercheVoisins(self, grid):
+        self.voisins = []
         grille = grid.getGrid()
         if self.getX() > 0:
             self.voisins.append(grille[self.y][self.x - 1])
