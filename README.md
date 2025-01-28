@@ -49,4 +49,7 @@ Version 5.1 => Corrections sur la mise à jour des Sets, et vérification
 Version 5.2 => Correction de la mise à jour des Sets:\
 	* Changement du format de fichier pour les programmes => On peut accueillir plus de couleurs. Les sets sont exportés & importés\ 
 	* A l'import d'un programme, les sets de base et le choix des sets est correctement modifié\
-
+Version 5.3 => Mise à jour des Sets complétée (pour le moment)\
+	* Les sets sont enregistrés avec les programmes dans le launge\
+	=> On peut donc lancer une succession de programmes
+	   avec des sets différents\
