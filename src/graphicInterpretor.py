@@ -36,11 +36,13 @@ class GraphicalInterpretor(PietInterpretor):
         self.fen.bind('<Key>', self.keyboardEvents)
 
         self.codeZone = None
-
+        
         #Cette liste de base sera changée lorsque les préférences de Sets seront
         #implémentées. De plus, cela peut être modifié si une mise à jour sur
         #le nombre de teintes est effectuée.
-        self.leftColors = [-3, -4, -5, -6]
+        allColors = self.getAllColorsFromColorTab()
+        self.leftColors = Color.getLeftColors(allColors)
+
         self.setsZone = None
         self.unfold = False
         self.nbDrawingWidgets = 8
@@ -189,6 +191,12 @@ class GraphicalInterpretor(PietInterpretor):
 ########################################################################################
 ##### Fonctions D'Etat #################################################################
 ########################################################################################
+    def getAllColorsFromColorTab(self):
+        colors = []
+        for col in self.ordonnateur.colorTab[:-2]:
+            colors.append(col[0].getColor())
+        return colors
+
     #Aucune mise à jour des teintes n'est prévue, on va donc ne tester que les couleurs
     def setsNotOkWithCode(self):
         allPossibleColors = [color[0].getColor() for color in self.ordonnateur.colorTab[:-2]]
@@ -226,6 +234,13 @@ class GraphicalInterpretor(PietInterpretor):
 
                     fichier.write(chr(10))
                 fichier.write("EOP")
+                fichier.write(chr(10))
+
+        #On va écrire les données de sets
+                for col in self.ordonnateur.colorTab[:-2]:
+                    fichier.write(str(col[0].getColor()))
+                    fichier.write(";")
+            
 
         self.programmName = os.path.basename(fichier_destination)[:-4] #txt en moins
 
@@ -283,6 +298,15 @@ class GraphicalInterpretor(PietInterpretor):
 
             self.grille = grid
 
+            #Mise en place des sets
+            i += 1
+            setLine = t[i].split(';')[:-1]
+            for col in range(len(setLine)):
+                color = int(setLine[col])
+
+                for i in range(3):
+                    self.ordonnateur.colorTab[col][i].setColor(color)
+                    
             self.reinit()
             self.can.delete("codeZone")
             self.grille = grid
@@ -339,6 +363,7 @@ class GraphicalInterpretor(PietInterpretor):
         self.output.reinit()
         self.majOutput()
         self.majStack()
+        self.majSetTable()
 
     def reset(self, x = 5, y = 5):
         gx, gy = self.sizeCodeX.get(), self.sizeCodeY.get()
@@ -511,6 +536,7 @@ class GraphicalInterpretor(PietInterpretor):
             return None
 
         return setsTab.underZones[zone]
+    
 ########################################################################################
 ##### Fonctions évènementielles ########################################################
 ########################################################################################
@@ -779,6 +805,25 @@ class GraphicalInterpretor(PietInterpretor):
         self.can.delete("codelPointer")
         GraphicZone.arrow(self.can, zone, self.dp.direction_actuelle())
 
+    def majSetTable(self):
+        setsTab = self.zone1.underZones[-1]
+        setsZone = self.zone1.underZones[-2]
+        
+        for st in range(len(self.ordonnateur.colorTab) - 2):
+            for col in range(len(self.ordonnateur.colorTab[st])):
+                index = st*(len(self.ordonnateur.colorTab[st])) + col
+                color = self.ordonnateur.colorTab[st][col].getHexa()
+                setsTab.underZones[index].color = color
+                self.can.itemconfigure(setsTab.underZones[index].graphicZone,
+                                       fill = color)
+
+                setsZone.underZones[st].underZones[col].color = color
+                self.can.itemconfigure(setsZone.underZones[st].underZones[col].graphicZone,
+                                       fill = color)
+
+        self.leftColors = Color.getLeftColors(self.getAllColorsFromColorTab())
+                
+        
 
     def majOutput(self):
         self.can.delete("outputText")

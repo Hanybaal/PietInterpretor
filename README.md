@@ -19,8 +19,6 @@ en entrée celui du 1er programme.
 
 
 Prochain(e)s mises à jour / Patchs envisagé(e)s:
-- Faire des thèmes de couleur pour l'Interpréteur Graphique (MAJ des Sets)
-	* Enregistrement des préférences de Sets
 - Refactor du code (amélioration de la structure des classes,
   remplacement du français par l'anglais, variables privées...)
 - Ajout de nouvelles couleurs qui seraient des programmes pré-codés
@@ -48,3 +46,7 @@ Version 5.0 => Mise à jour des Sets: ajout de la possibilité de
 Version 5.1 => Corrections sur la mise à jour des Sets, et vérification
                avant lecture d'un programme que les couleurs présentes
                dans le programme correspondent aux couleurs des Sets\
+Version 5.2 => Correction de la mise à jour des Sets:\
+	* Changement du format de fichier pour les programmes => On peut accueillir plus de couleurs. Les sets sont exportés & importés\ 
+	* A l'import d'un programme, les sets de base et le choix des sets est correctement modifié\
+

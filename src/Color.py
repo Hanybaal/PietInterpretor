@@ -1,6 +1,16 @@
 
 
 class Color():
+    #Les couleurs 7, 8, -1 et -2 restent blanc et noir, et ne comptent pas ici
+    allColors = [1, 2, 3, 4, 5, 6, -3, -4, -5, -6]
+
+    def getLeftColors(colors):
+        leftColors = []
+        for color in Color.allColors:
+            if (color not in colors):
+                leftColors.append(color)
+        return leftColors
+    
     #Fonctions non rapportées aux couleurs de l'interpréteur
     def getRGBFromHexa(hexa : str):
         return tuple(int(hexa[i:i+2], 16) for i in (1, 3, 5))
@@ -118,6 +128,17 @@ class Color():
 
     def getLuminosity(self):
         return self.luminosity
+
+    def getHexa(self):
+        return self.hexa
+
+    def setColor(self, c):
+        self.color = c
+        self.hexa = self.convertColorToHexa()
+
+    def setLuminosity(self, l):
+        self.luminosity = l
+        self.hexa = self.convertColorToHexa()
 
     def isBlack(self):
         return ((self.getColor() == 8) or (self.getColor() == -1))
