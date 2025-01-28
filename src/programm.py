@@ -5,6 +5,7 @@ from Grid import *
 class Programm():
     def __init__(self):
         self.grid = None
+        self.sets = None
         self.stack = None
         self.output = None
         self.shareStack = False
@@ -23,6 +24,9 @@ class Programm():
     def getGrid(self):
         return self.grid
 
+    def getSets(self):
+        return self.sets
+
     def sharingStack(self):
         return self.shareStack
 
@@ -32,6 +36,9 @@ class Programm():
     #Setteurs
     def setGrid(self, g = Grid(5, 5)):
         self.grid = g
+
+    def setSets(self, sets = None):
+        self.sets = sets
 
     def setOutput(self, output):
         self.output = Output()
@@ -48,6 +55,7 @@ class Programm():
         self.setGrid(Grid(5, 5))
         self.setOutput(Output())
         self.setStack(Stack())
+        self.setSets(None)
 
     def setFires(self, f1, f2):
         self.fireStack = f1

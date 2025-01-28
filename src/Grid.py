@@ -18,6 +18,11 @@ class Grid():
             txt += '\n'
         return txt
 
+    def searchCloseCells(self):
+        for line in self.getGrid():
+            for cell in line:
+                cell.chercheVoisins(self)
+
     def sortie(self, x, y):
         return (x < 0 or y < 0 or x > self.maxX() or y > self.maxY() or self.getCellule(y, x).isBlack())
 

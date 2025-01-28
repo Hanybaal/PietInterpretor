@@ -30,7 +30,6 @@ class Main():
 
         self.fen.mainloop()
 
-
 ##### Fonctions supplémentaires #########################################################
     #Fonction à appeler avant le premier launch
     def preLaunch(self):
@@ -71,7 +70,8 @@ class Main():
                                  ptc = index, launched = True,
                                  isLast = (index == (nbProg - 1)),
                                  stack = self.lastSharedStack(),
-                                 output = self.lastSharedOutput())
+                                 output = self.lastSharedOutput(),
+                                 sets = self.programms[index].getSets())
 
     #Renomme le programme dans le launge par le nom n
     def rename(self, n):
@@ -129,11 +129,9 @@ class Main():
         self.canQuit = False
 
         self.fen.withdraw()
-
-
         self.lastLaunchedProgrammIndex = indice
         i = GraphicalInterpretor(main = self, grille = self.programms[indice].getGrid(),
-                                 ptc = indice)
+                                 ptc = indice, sets = self.programms[indice].getSets())
 
         self.programms[indice].name = i.programmName
 
@@ -187,6 +185,7 @@ class Main():
             lastProgramm.setStack(self.lastSharedStack())
             lastProgramm.setOutput(self.lastSharedOutput())
             lastProgramm.setGrid(Grid(5, 5))
+            lastProgramm.setSets(None)
 
         lastProgramm = self.programms[-1]
 

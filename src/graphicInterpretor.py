@@ -13,8 +13,9 @@ from tkinter import filedialog
 
 class GraphicalInterpretor(PietInterpretor):
     def __init__(self, fen = None, main = None, grille = Grid(5, 5), ptc = 0,
-                 launched = False, isLast = False, stack = Stack(), output = Output()):
-        super().__init__(grille, stack, output)
+                 launched = False, isLast = False, stack = Stack(), output = Output(),
+                 sets = None):
+        super().__init__(grille, sets, stack, output)
 
         self.main = main
         self.programmName = "Unamed"
@@ -289,9 +290,7 @@ class GraphicalInterpretor(PietInterpretor):
                 i += 1
 
             #Recherche des voisins
-            for ligne in range(len(grid.grille)):
-                for colonne in range(len(grid.grille[ligne])):
-                    grid.grille[ligne][colonne].chercheVoisins(grid)
+            grid.searchCloseCells()
 
             fichier.close()
 
@@ -372,9 +371,7 @@ class GraphicalInterpretor(PietInterpretor):
         self.reinit()
         self.can.delete("codeZone")
         self.grille = Grid(x, y)
-        for line in self.grille.getGrid():
-            for column in line:
-                column.chercheVoisins(self.grille)
+        self.grille.searchCloseCells()
 
         self.codeZone.underZones = []
         self.makeCodeZone(self.codeZone)
@@ -736,9 +733,10 @@ class GraphicalInterpretor(PietInterpretor):
 
             if not self.launched:
                 self.main.programms[self.programmToChange].setGrid(self.grille)
+                self.main.programms[self.programmToChange].setSets(
+                                                    self.ordonnateur.colorTab)
                 self.main.majCodeZone()
                 self.fen.destroy()
-
 
             else:
                 self.fen.destroy()

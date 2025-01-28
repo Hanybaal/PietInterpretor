@@ -7,7 +7,7 @@ import time
 
 
 class PietInterpretor():
-    def __init__(self, grille, stack = Stack(), output = Output()):
+    def __init__(self, grille, sets = None, stack = Stack(), output = Output()):
         self.allBlocks = []
         self.stack = stack
         self.grille = grille
@@ -18,7 +18,7 @@ class PietInterpretor():
         self.dp = DirectionnalPointer()
         self.cc = PointeurExtremite()
         self.cmd = Controls(self.dp, self.cc, self.output, self.stack)
-        self.ordonnateur = Ordonnateur(self.cmd)
+        self.ordonnateur = Ordonnateur(self.cmd, sets)
 
 
     def lecture(self, grille, codel, nbEchecs = 0, speedyLector = False):
@@ -161,9 +161,12 @@ class PietInterpretor():
 
 
 class Ordonnateur():
-    def __init__(self, cmd):
+    def __init__(self, cmd, sets = None):
         self.cmd = cmd
-        self.colorTab = self.creaColorTab()
+        if (sets is not None):
+            self.colorTab = sets
+        else:
+            self.colorTab = self.creaColorTab()
         self.cmdTab = [[(None, "None") for i in range(3)] for j in range(6)]
         self.pointeurx = None
         self.pointeury = None
