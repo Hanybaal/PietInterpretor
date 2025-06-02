@@ -72,3 +72,7 @@ class Programm():
         if (self.fireOutput is not None):
             can.itemconfigure(self.fireOutput,
                               fill = ("green" if self.sharingOutput() else "red"))
+
+    def partialReset(self):
+        self.stack = Stack()
+        self.output = Output()

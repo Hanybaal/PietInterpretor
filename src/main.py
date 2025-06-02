@@ -46,8 +46,8 @@ class Main():
         i = None
         for prog in range(len(self.programms) - 1):
             i = PietInterpretor(grille = self.programms[prog].getGrid(),
-                             stack = self.lastSharedStack(),
-                             output = self.lastSharedOutput())
+                             stack = self.lastSharedStack(prog),
+                             output = self.lastSharedOutput(prog))
 
             i.lecture(i.grille, i.grille.getCellule(0, 0), 0, True)
             self.programms[prog].setStack(i.stack)
@@ -64,14 +64,22 @@ class Main():
         if ((nbProg == 0) or (index > nbProg)):
             return
 
+        #First program: reset
+        if (index == 0):
+            self.resetProgramms()
+        
         i = None
 
         i = GraphicalInterpretor(main = self, grille = self.programms[index].getGrid(),
                                  ptc = index, launched = True,
                                  isLast = (index == (nbProg - 1)),
-                                 stack = self.lastSharedStack(),
-                                 output = self.lastSharedOutput(),
+                                 stack = self.lastSharedStack(index),
+                                 output = self.lastSharedOutput(index),
                                  sets = self.programms[index].getSets())
+
+    def resetProgramms(self):
+        for prog in self.programms:
+            prog.partialReset()
 
     #Renomme le programme dans le launge par le nom n
     def rename(self, n):
@@ -85,8 +93,8 @@ class Main():
     def blankProgramm(self):
         return Grid(5, 5)
 
-    def lastSharedStack(self):
-        i = len(self.programms) - 2
+    def lastSharedStack(self, index):
+        i = index - 1
         while not (i == -1):
             actualProgramm = self.programms[i]
 
@@ -102,8 +110,8 @@ class Main():
 
         return Stack()
 
-    def lastSharedOutput(self):
-        i = len(self.programms) - 2
+    def lastSharedOutput(self, index):
+        i = index - 1
         while not (i == -1):
             actualProgramm = self.programms[i]
             if (actualProgramm.sharingOutput()):
@@ -182,8 +190,8 @@ class Main():
 
         else:
             lastProgramm = self.programms[-1]
-            lastProgramm.setStack(self.lastSharedStack())
-            lastProgramm.setOutput(self.lastSharedOutput())
+            lastProgramm.setStack(self.lastSharedStack(nbCodes))
+            lastProgramm.setOutput(self.lastSharedOutput(nbCodes))
             lastProgramm.setGrid(Grid(5, 5))
             lastProgramm.setSets(None)
 

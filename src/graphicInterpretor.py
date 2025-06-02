@@ -64,7 +64,7 @@ class GraphicalInterpretor(PietInterpretor):
         self.launched = launched
         self.isLast = isLast
         if (launched):
-            self.speed = 1
+            self.speed = 20
             self.preLecture(self.grille, self.grille.getCellule(0, 0))
 
         self.fen.mainloop()
@@ -72,7 +72,7 @@ class GraphicalInterpretor(PietInterpretor):
     def preLecture(self, grille, codel, nbEchecs = 0):
         if (self.setsNotOkWithCode()):
             finfo = tk.Toplevel(self.fen)
-            finfo.title("Attention!! Vos sets de couleur ne corespondent pas avec le code!!")
+            finfo.title("Attention!! Vos sets de couleur ne correspondent pas avec le code!!")
             y = 30
             x = int(self.size1/2.5)
             finfo.geometry(str(x) + "x" + str(y) + "+" + str(int(x/2)) + "+" + str(int(self.size2/2 - y/2)))
@@ -729,21 +729,23 @@ class GraphicalInterpretor(PietInterpretor):
         if (self.main != None):
             self.main.canQuit = True
 
-            self.main.fen.deiconify()
-
+            #Accès à l'interpréteur en passant par le Launge sans lancer les programmes
             if not self.launched:
+                self.main.fen.deiconify()
                 self.main.programms[self.programmToChange].setGrid(self.grille)
-                self.main.programms[self.programmToChange].setSets(
-                                                    self.ordonnateur.colorTab)
+                self.main.programms[self.programmToChange].setSets(self.ordonnateur.colorTab)
                 self.main.majCodeZone()
                 self.fen.destroy()
 
+            #Cas où le programme est lancé depuis le bouton "Lancer" du Launge
             else:
                 self.fen.destroy()
                 self.main.programms[self.programmToChange].setStack(self.stack)
                 self.main.programms[self.programmToChange].setOutput(self.output)
                 self.main.launchGraphical(self.programmToChange + 1)
 
+        #Cas où on a simplement lancé l'interpréteur graphique sans passer par
+        #le Launge
         else:
             self.fen.destroy()
 
