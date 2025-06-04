@@ -64,10 +64,46 @@ class GraphicalInterpretor(PietInterpretor):
         self.launched = launched
         self.isLast = isLast
         if (launched):
-            self.speed = 20
+            self.speed = 100
             self.preLecture(self.grille, self.grille.getCellule(0, 0))
 
         self.fen.mainloop()
+
+    def init(self, grid, ptc, isLast, stack, output, sets):
+        #Réinitialisation des attributs objets
+        self.allBlocks = []
+        self.stack = stack
+        self.grille = grid
+        for line in self.grille.getGrid():
+            for column in line:
+                column.chercheVoisins(self.grille)
+        self.output = output
+        self.dp = DirectionnalPointer()
+        self.cc = PointeurExtremite()
+        self.cmd = Controls(self.dp, self.cc, self.output, self.stack)
+        self.ordonnateur = Ordonnateur(self.cmd, sets)
+                
+        self.programmToChange = ptc
+        self.isLast = isLast
+
+        #Réinitialisation des attributs autres
+        allColors = self.getAllColorsFromColorTab()
+        self.leftColors = Color.getLeftColors(allColors)
+
+        codeZone = self.zone2.underZones[0]
+        codeZone.underZones = []
+        self.makeCodeZone(codeZone)
+        self.codeZone = codeZone
+##        self.colorZone(self.zone1)
+        self.colorZone(self.codeZone)
+##        self.colorZone(self.zone3)
+        self.unfold = False
+        self.actualColor = Color(7, 0)
+        #self.widgets()
+        self.majOutput()
+        self.fen.update()
+        self.can.update()
+        self.preLecture(self.grille, self.grille.getCellule(0, 0))
 
     def preLecture(self, grille, codel, nbEchecs = 0):
         if (self.setsNotOkWithCode()):
@@ -123,7 +159,6 @@ class GraphicalInterpretor(PietInterpretor):
         commande = self.ordonnateur.actualCommand(couleur)
         nom = self.ordonnateur.actualCommandName(couleur)
         #On a une instruction à réaliser
-
 
         #On va construire le block lié à notre cellule et chercher la cellule de sortie
         blockActuel = Block()
@@ -723,7 +758,7 @@ class GraphicalInterpretor(PietInterpretor):
     def keyboardEvents(self, event):
         touche = event.keysym
         if touche == "Escape":
-            self.quit()
+            self.quit("Escape")
 
     def quit(self, event = None):
         if (self.main != None):
@@ -739,10 +774,22 @@ class GraphicalInterpretor(PietInterpretor):
 
             #Cas où le programme est lancé depuis le bouton "Lancer" du Launge
             else:
-                self.fen.destroy()
-                self.main.programms[self.programmToChange].setStack(self.stack)
-                self.main.programms[self.programmToChange].setOutput(self.output)
-                self.main.launchGraphical(self.programmToChange + 1)
+                if (event == "Escape"):
+                    self.fen.destroy()
+                    self.main.launchInterpretor = self
+                    self.main.programms[self.programmToChange].setStack(self.stack)
+                    self.main.programms[self.programmToChange].setOutput(self.output)
+
+                else:
+                    self.main.launchInterpretor = self
+                    self.main.programms[self.programmToChange].setStack(self.stack)
+                    self.main.programms[self.programmToChange].setOutput(self.output)
+                    self.init(self.main.programms[self.programmToChange + 1].getGrid(),
+                              self.programmToChange + 1,
+                              (self.programmToChange + 1) == (len(self.main.programms) - 1),
+                              self.main.lastSharedStack(self.programmToChange + 1),
+                              self.main.lastSharedOutput(self.programmToChange + 1),
+                              self.main.programms[self.programmToChange + 1].getSets())
 
         #Cas où on a simplement lancé l'interpréteur graphique sans passer par
         #le Launge

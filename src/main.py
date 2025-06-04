@@ -20,6 +20,7 @@ class Main():
         self.programms = [] #Contient des objets Grid
         self.programmNames = []
         self.lastLaunchedProgrammIndex = 0
+        self.launchInterpretor = None #Interpréteur généré par le bouton "Lancer" du Launge
 
         self.canQuit = True
         self.lastCode = None
@@ -64,18 +65,24 @@ class Main():
         if ((nbProg == 0) or (index > nbProg)):
             return
 
-        #First program: reset
+        #First program: reset and setting the launchInterpretor
         if (index == 0):
             self.resetProgramms()
-        
-        i = None
-
-        i = GraphicalInterpretor(main = self, grille = self.programms[index].getGrid(),
+            self.launchInterpretor = None
+            self.launchInterpretor = GraphicalInterpretor(
+                                 main = self, grille = self.programms[index].getGrid(),
                                  ptc = index, launched = True,
                                  isLast = (index == (nbProg - 1)),
                                  stack = self.lastSharedStack(index),
                                  output = self.lastSharedOutput(index),
                                  sets = self.programms[index].getSets())
+
+        else:
+            self.launchInterpretor.init(self.programms[index].getGrid(),
+                                    index, (index == (nbProg - 1)),
+                                    self.lastSharedStack(index),
+                                    self.lastSharedOutput(index),
+                                    self.programms[index].getSets())
 
     def resetProgramms(self):
         for prog in self.programms:

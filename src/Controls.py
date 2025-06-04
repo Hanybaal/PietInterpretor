@@ -20,7 +20,7 @@ class Controls():
 
     def outChar(self):
         v = self.stack.pop()
-        if (v.isnumeric()):
+        if (str(v).isnumeric()):
             self.output.outChar(v)
 
         else:

@@ -1,8 +1,5 @@
-# PietInterpretor
+# PietInterpretor: Compilation de programmes en langage Piet
 Interpréteur de langage Piet, avec un "launge" pouvant contenir plusieurs programmes à la fois.
-
-Si vous cliquez sur "Lancer", c'est la console python qui affichera
-le résultat final (stack + output) pour le moment.
 
 Indications:
 Pour chaque programme, deux petites led sont à disposition. Elles
@@ -27,6 +24,8 @@ Prochain(e)s mises à jour / Patchs envisagé(e)s:
   des branchements entre programmes
 - Adapter la taille des textes & remplacer tous les boutons tkinter
   par des boutons à taille adaptative à la taille de l'écran
+- Duplication de programmes dans le launge
+- Laboratoire de couleurs
 
 Dernières mises à jour (historique simplifié):\
 Version 1.0 => Interpréteur textuel de Piet\
@@ -53,3 +52,8 @@ Version 5.3 => Mise à jour des Sets complétée (pour le moment)\
 	* Les sets sont enregistrés avec les programmes dans le launge\
 	=> On peut donc lancer une succession de programmes
 	   avec des sets différents\
+Version 5.4 => Mise à jour et patch du lancement de la compilation de programmes\
+	* Les fonctions lastSharedStack et lastSharedOutput fonctionnent sans anomalie\
+	* Le lancement des programmes ne génère qu'une seule fenêtre dont la zone de code change\
+		-> + beau et + clair\
+		-> La succession des programme se déroule sans anomalie\
