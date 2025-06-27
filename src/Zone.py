@@ -43,6 +43,12 @@ class Zone():
     def getCenter(self):
         return ((self.getEndX() + self.getX())/2, (self.getEndY() + self.getY())/2)
 
+    def getCenterX(self):
+        return (self.getEndX() + self.getX())/2
+
+    def getCenterY(self):
+        return (self.getEndY() + self.getY())/2
+
     def getColor(self):
         return self.color
 

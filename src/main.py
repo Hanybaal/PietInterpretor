@@ -234,6 +234,9 @@ class Main():
 
 
 ##### Fonctions graphiques #############################################################
+    def getLaboratory(self, event = None):
+        print("Lab")
+
     def clean(self):
         self.can.delete("all")
 
@@ -352,7 +355,17 @@ class Main():
                          (self.zone2.getPax()*6, self.zone2.getPay()*9),
                          COLOR4)
         self.colorables.append((zoneCodes, zoneCodes.color))
+
+        labZone = TouchableZone(((self.zone2.getX() + zoneCodes.getX())/4,
+                                self.zone2.getPay()*0.5),
+                                ((self.zone2.getX() + zoneCodes.getX())/2,
+                                self.zone2.getPay()),
+                                COLOR5, command = self.getLaboratory,
+                                tags = "laboratory")
+        
+
         self.zone2.addZone(zoneCodes)
+        self.zone2.addZone(labZone)
 
         self.colorZone(self.zone1)
         self.colorZone(self.zone2)
@@ -380,6 +393,11 @@ class Main():
                              text = "***  La led du dessous sert à partager l'output  ***",
                              font = ('Georgia 15 bold'),
                              tags = "stackValue")
+
+        self.can.create_text(labZone.getCenterX(), labZone.getCenterY(),
+                    text = "Laboratoire",
+                    tags = "laboratory",
+                    font = 'Georgia 15 bold')
 
 
         #Zone 2: first programm
