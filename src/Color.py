@@ -9,10 +9,8 @@ COLTOHEX = {v: k for k, v in HEXTOCOL.items()}
 ALLCOLORS = list(set([int(c[0:(len(c)-1)]) for c in HEXTOCOL.values()]))
 
 class Color():
-    #Les couleurs 7, 8, -1 et -2 restent blanc et noir, et ne comptent pas ici
-    #allColors = [1, 2, 3, 4, 5, 6, -3, -4, -5, -6]
+    #Les couleurs 7 et 8 restent blanc et noir, et ne comptent pas ici
     allColors = ALLCOLORS
-    print(allColors)
     allColors.remove(7)
     allColors.remove(8)
 
