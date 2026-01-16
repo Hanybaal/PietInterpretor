@@ -2,14 +2,19 @@ import json
 
 with open("../colors.json", "r", encoding="utf-8") as f:
     HEXTOCOL = json.load(f)
+    print(HEXTOCOL)
 
 COLTOHEX = {v: k for k, v in HEXTOCOL.items()}
 
-ALLCOLORS = [int(c[1]) for c in HEXTOCOL.values()]
+ALLCOLORS = list(set([int(c[0:(len(c)-1)]) for c in HEXTOCOL.values()]))
 
 class Color():
     #Les couleurs 7, 8, -1 et -2 restent blanc et noir, et ne comptent pas ici
-    allColors = [1, 2, 3, 4, 5, 6, -3, -4, -5, -6]
+    #allColors = [1, 2, 3, 4, 5, 6, -3, -4, -5, -6]
+    allColors = ALLCOLORS
+    print(allColors)
+    allColors.remove(7)
+    allColors.remove(8)
 
     def getLeftColors(colors):
         leftColors = []
