@@ -1,4 +1,11 @@
+import json
 
+with open("../colors.json", "r", encoding="utf-8") as f:
+    HEXTOCOL = json.load(f)
+
+COLTOHEX = {v: k for k, v in HEXTOCOL.items()}
+
+ALLCOLORS = [int(c[1]) for c in HEXTOCOL.values()]
 
 class Color():
     #Les couleurs 7, 8, -1 et -2 restent blanc et noir, et ne comptent pas ici
@@ -38,90 +45,41 @@ class Color():
 
         return couleur
 
+    def reconvertCol(couleur: int):
+        if (couleur == -1):
+            return 8
+
+        elif (couleur == -2):
+            return 7
+
+        return couleur
+
+    def reconvertLum(luminosity: int):
+        if (luminosity == -1):
+            return 0
+
+        elif (luminosity == -2):
+            return 0
+
+        return luminosity
+
     def sameColor(c1, c2):
         return ((c1.getColor() == c2.getColor()) and (c1.getLuminosity() == c2.getLuminosity()))
 
-    def convertHexaToColor(color : str) -> str:
-        dico_convert = {"#FFC0C0" : "11",
-                        "#FF0000" : "12",
-                        "#C00000" : "13",
-                        "#FFFFC0" : "21",
-                        "#FFFF00" : "22",
-                        "#C0C000" : "23",
-                        "#C0FFC0" : "31",
-                        "#00FF00" : "32",
-                        "#00C000" : "33",
-                        "#C0FFFF" : "41",
-                        "#00FFFF" : "42",
-                        "#00C0C0" : "43",
-                        "#C0C0FF" : "51",
-                        "#0000FF" : "52",
-                        "#0000C0" : "53",
-                        "#FFC0FF" : "61",
-                        "#FF00FF" : "62",
-                        "#C000C0" : "63",
-                        "#FFFFFF" : "70",
-                        "#000000" : "80",
-                        "#FFFFFF" : "-2-2",
-                        "#000000" : "-1-1",
-                        "#EEA500" : "-31",
-                        "#BD7500" : "-32",
-                        "#9C5500" : "-33",
-                        "#75CEB0" : "-41",
-                        "#55ADB0" : "-42",
-                        "#358CB0" : "-43",
-                        "#FF22BB" : "-51",
-                        "#CC0088" : "-52",
-                        "#990055" : "-53",
-                        "#44FFAA" : "-61",
-                        "#33CC88" : "-62",
-                        "#22AA55" : "-63"}
-        return (dico_convert[str(color)])
+
+    def convertHexaToColor(color: str) -> str:
+        return HEXTOCOL[str(color)]
 
     def __init__(self, couleur :  int, luminosite: int):
-        self.color = couleur
-        self.luminosity = luminosite
+        self.color = Color.reconvertCol(couleur)
+        self.luminosity = Color.reconvertLum(luminosite)
         self.hexa = self.convertColorToHexa()
 
     def __repr__(self) -> str:
         return (self.hexa)
 
     def convertColorToHexa(self) -> str:
-        dico_convert = {"11" : "#FFC0C0",
-                        "12" : "#FF0000",
-                        "13" : "#C00000",
-                        "21" : "#FFFFC0",
-                        "22" : "#FFFF00",
-                        "23" : "#C0C000",
-                        "31" : "#C0FFC0",
-                        "32" : "#00FF00",
-                        "33" : "#00C000",
-                        "41" : "#C0FFFF",
-                        "42" : "#00FFFF",
-                        "43" : "#00C0C0",
-                        "51" : "#C0C0FF",
-                        "52" : "#0000FF",
-                        "53" : "#0000C0",
-                        "61" : "#FFC0FF",
-                        "62" : "#FF00FF",
-                        "63" : "#C000C0",
-                        "70" : "#FFFFFF",
-                        "80" : "#000000",
-                        "-2-2" : "#FFFFFF",
-                        "-1-1" : "#000000",
-                        "-31" : "#EEA500",
-                        "-32" : "#BD7500",
-                        "-33" : "#9C5500",
-                        "-41" : "#75CEB0",
-                        "-42" : "#55ADB0",
-                        "-43" : "#358CB0",
-                        "-51" : "#FF22BB",
-                        "-52" : "#CC0088",
-                        "-53" : "#990055",
-                        "-61" : "#44FFAA",
-                        "-62" : "#33CC88",
-                        "-63" : "#22AA55"}
-        return (dico_convert[str(self.color) + str(self.luminosity)])
+        return (COLTOHEX[str(self.color) + str(self.luminosity)])
 
     def getColor(self):
         return self.color
