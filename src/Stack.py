@@ -129,6 +129,8 @@ class Stack():
         p = self.stack[:v2]
         for i in range(v1):
             p = p[1:len(p)] + [p[0]]
+
+        self.stack = p + self.stack[v2:]
             
             
 
