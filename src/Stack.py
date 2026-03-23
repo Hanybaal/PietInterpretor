@@ -117,11 +117,20 @@ class Stack():
     def duplicate(self):
         self.empile(self.top())
 
-    def roll(self):
+    def switch(self):
         v1 = self.pop()
         v2 = self.pop()
         self.empile(v1)
         self.empile(v2)
+
+    def roll(self):
+        v1 = self.pop()
+        v2 = self.pop()
+        p = self.stack[:v2]
+        for i in range(v1):
+            p = p[1:len(p)] + [p[0]]
+            
+            
 
 ##Roll originel. Remplacé par un switch (caractère '/' en befunge)
 ##        v1 = self.pop()
