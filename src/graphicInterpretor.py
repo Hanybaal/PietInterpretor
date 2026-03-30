@@ -341,7 +341,7 @@ class GraphicalInterpretor(PietInterpretor):
                     self.ordonnateur.colorTab[col][i].setColor(color)
                     
             self.reinit()
-            self.can.delete("codeZone")
+            self.majZone2()
             self.grille = grid
 
             self.codeZone.underZones = []
@@ -350,35 +350,15 @@ class GraphicalInterpretor(PietInterpretor):
 
             codeZone = self.codeZone
 
-            ########## décorations ##########
-            codeZoneExtr = [(codeZone.getX(), codeZone.getY()),
-                            (codeZone.getEndX(), codeZone.getY()),
-                            (codeZone.getEndX(), codeZone.getEndY()),
-                            (codeZone.getX(), codeZone.getEndY())]
-
-            zone2Extr = [(self.zone2.getX(), self.zone2.getY()),
-                         (self.zone2.getEndX(), self.zone2.getY()),
-                         (self.zone2.getEndX(), self.zone2.getEndY()),
-                         (self.zone2.getX(), self.zone2.getEndY())]
-
-            scze = len(codeZoneExtr)
-            w = 2
-            c = "black"
-            for i in range(len(codeZoneExtr)):
-                self.can.create_line(codeZoneExtr[i][0], codeZoneExtr[i][1],
-                                     zone2Extr[i][0], zone2Extr[i][1],
-                                     fill = c, width = w,
-                                     tags = "codeZone")
-
-                self.can.create_line(codeZoneExtr[(i+1)%scze][0], codeZoneExtr[(i+1)%scze][1],
-                                     zone2Extr[i][0], zone2Extr[i][1],
-                                     fill = c, width = w,
-                                     tags = "codeZone")
-
-                self.can.create_line(codeZoneExtr[(i-1)%scze][0], codeZoneExtr[(i-1)%scze][1],
-                                     zone2Extr[i][0], zone2Extr[i][1],
-                                     fill = c, width = w,
-                                     tags = "codeZone")
+    def majZone2(self):
+        self.can.delete("codeZone")
+        self.can.delete("addminzone0")
+        self.can.delete("addminzone1")
+        self.can.delete("addminzone2")
+        self.can.delete("addminzone3")
+        self.codeZone.underZones = []
+        self.makeCodeZone(self.codeZone)
+        self.colorZone(self.zone2)
 
     def reinit(self):
         self.programmName = "Unamed"
@@ -404,7 +384,7 @@ class GraphicalInterpretor(PietInterpretor):
         y = int(gy) if gy.isnumeric() else y
 
         self.reinit()
-        self.can.delete("codeZone")
+        self.majZone2()
         self.grille = Grid(x, y)
         self.grille.searchCloseCells()
 
@@ -413,36 +393,6 @@ class GraphicalInterpretor(PietInterpretor):
         self.colorZone(self.zone2)
 
         codeZone = self.codeZone
-
-        ########## décorations ##########
-        codeZoneExtr = [(codeZone.getX(), codeZone.getY()),
-                        (codeZone.getEndX(), codeZone.getY()),
-                        (codeZone.getEndX(), codeZone.getEndY()),
-                        (codeZone.getX(), codeZone.getEndY())]
-
-        zone2Extr = [(self.zone2.getX(), self.zone2.getY()),
-                     (self.zone2.getEndX(), self.zone2.getY()),
-                     (self.zone2.getEndX(), self.zone2.getEndY()),
-                     (self.zone2.getX(), self.zone2.getEndY())]
-
-        scze = len(codeZoneExtr)
-        w = 2
-        c = "black"
-        for i in range(len(codeZoneExtr)):
-            self.can.create_line(codeZoneExtr[i][0], codeZoneExtr[i][1],
-                                 zone2Extr[i][0], zone2Extr[i][1],
-                                 fill = c, width = w,
-                                 tags = "codeZone")
-
-            self.can.create_line(codeZoneExtr[(i+1)%scze][0], codeZoneExtr[(i+1)%scze][1],
-                                 zone2Extr[i][0], zone2Extr[i][1],
-                                 fill = c, width = w,
-                                 tags = "codeZone")
-
-            self.can.create_line(codeZoneExtr[(i-1)%scze][0], codeZoneExtr[(i-1)%scze][1],
-                                 zone2Extr[i][0], zone2Extr[i][1],
-                                 fill = c, width = w,
-                                 tags = "codeZone")
         ################################################################################
 
         if (self.main != None):
@@ -821,7 +771,7 @@ class GraphicalInterpretor(PietInterpretor):
                 self.cascadeColor(color, v, visites)
 
     def makeCodeZone(self, codeZone):
-        sx, sy = len(self.grille.getRow(0)), len(self.grille.getGrid())
+        sx, sy = self.grille.sizeX(), self.grille.sizeY()
         ssx, ssy = codeZone.getSizeX()/sx, codeZone.getSizeY()/sy
         for row in range(sy):
             for column in range(sx):
@@ -833,7 +783,12 @@ class GraphicalInterpretor(PietInterpretor):
     def colorZone(self, zone, bg = -1, tags = "zone"):
         if (bg < 0):
             zone.creaZone(self.can, tags = tags)
-
+            if (zone.hasNameSet()):
+                self.can.create_text(zone.getX() + zone.getSizeX()/2,
+                                     zone.getY() + zone.getSizeY()/2,
+                                     text = zone.getName(), tags = zone.tags,
+                                     font = ('Georgia 15 bold'))
+                
         for i in range(len(zone.underZones)):
             self.colorZone(zone.underZones[i], bg - 1, tags)
 
@@ -921,6 +876,24 @@ class GraphicalInterpretor(PietInterpretor):
 
         for i in range(len(p1)):
             self.stack.empile(p1[-1 -i])
+
+    def addminlincol(self, name):
+        #print(Zone.getZoneByName(self.zone2, name).getName())
+        if (name == "Line+"):
+            self.grille.addLine()
+
+        if (name == "Line-"):
+            self.grille.supLine()
+
+        if (name == "Col+"):
+            self.grille.addCol()
+
+        if (name == "Col-"):
+            self.grille.supCol()
+
+        self.majZone2()
+        
+
 
     #370
     def widgets(self):
@@ -1046,12 +1019,42 @@ class GraphicalInterpretor(PietInterpretor):
                                    self.zone2.getSizeY() - 2*self.zone2.getPay()),
                         "orange")
 
+        #Ajout des boutons pour ajout dynamique de lignes et colonnes
+        amz1 = TouchableZone((codeZone.getEndX(), codeZone.getY() + self.zone2.getPay()*0),
+                            (-codeZone.getEndX() + self.zone2.getEndX(),
+                             self.zone2.getPay()),
+                            "orange", command = lambda c : self.addminlincol("Line+"),
+                            tags = "addminzone0", name = "Line+")
+        
+        amz2 = TouchableZone((codeZone.getEndX(), codeZone.getY() + self.zone2.getPay()*1),
+                            (-codeZone.getEndX() + self.zone2.getEndX(),
+                             self.zone2.getPay()),
+                            "orange", command = lambda c : self.addminlincol("Line-"),
+                            tags = "addminzone1", name = "Line-")
+        
+        amz3 = TouchableZone((codeZone.getEndX(), codeZone.getY() + self.zone2.getPay()*2),
+                            (-codeZone.getEndX() + self.zone2.getEndX(),
+                             self.zone2.getPay()),
+                            "orange", command = lambda c : self.addminlincol("Col+"),
+                            tags = "addminzone2", name = "Col+")
+        
+        amz4 = TouchableZone((codeZone.getEndX(), codeZone.getY() + self.zone2.getPay()*3),
+                            (-codeZone.getEndX() + self.zone2.getEndX(),
+                             self.zone2.getPay()),
+                            "orange", command = lambda c : self.addminlincol("Col-"),
+                            tags = "addminzone3", name = "Col-")
+
+
         self.zone2.addZone(codeZone)
+        self.zone2.addZone(amz1)
+        self.zone2.addZone(amz2)
+        self.zone2.addZone(amz3)
+        self.zone2.addZone(amz4)
+
 
         #Lignes et colonnes du code selon la taille de la grille
         self.makeCodeZone(codeZone)
-        self.codeZone = codeZone
-        
+        self.codeZone = codeZone        
 
         #Zone 3:
         #* Stack
@@ -1217,37 +1220,6 @@ class GraphicalInterpretor(PietInterpretor):
                                  uz.getEndX() - uz.getSizeX()/2, uz.getPay()*7,
                                  uz.getEndX() - uz.getPax()*2, uz.getY() + uz.getPay()*2,
                                  width = 3, tags = "newSetsTabLst")
-
-        #Zone 2: décorations
-        codeZoneExtr = [(codeZone.getX(), codeZone.getY()),
-                        (codeZone.getEndX(), codeZone.getY()),
-                        (codeZone.getEndX(), codeZone.getEndY()),
-                        (codeZone.getX(), codeZone.getEndY())]
-
-        zone2Extr = [(self.zone2.getX(), self.zone2.getY()),
-                     (self.zone2.getEndX(), self.zone2.getY()),
-                     (self.zone2.getEndX(), self.zone2.getEndY()),
-                     (self.zone2.getX(), self.zone2.getEndY())]
-
-        scze = len(codeZoneExtr)
-        w = 2
-        c = "black"
-        for i in range(len(codeZoneExtr)):
-            self.can.create_line(codeZoneExtr[i][0], codeZoneExtr[i][1],
-                                 zone2Extr[i][0], zone2Extr[i][1],
-                                 fill = c, width = w,
-                                 tags = "codeZone")
-
-            self.can.create_line(codeZoneExtr[(i+1)%scze][0], codeZoneExtr[(i+1)%scze][1],
-                                 zone2Extr[i][0], zone2Extr[i][1],
-                                 fill = c, width = w,
-                                 tags = "codeZone")
-
-            self.can.create_line(codeZoneExtr[(i-1)%scze][0], codeZoneExtr[(i-1)%scze][1],
-                                 zone2Extr[i][0], zone2Extr[i][1],
-                                 fill = c, width = w,
-                                 tags = "codeZone")
-
 
         #Zone 3: Stack
         self.can.create_text(stack.getX() + stack.getSizeX()/2,

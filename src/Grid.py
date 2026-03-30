@@ -11,7 +11,7 @@ class Grid():
         nbespaces = 0
         for y in range(self.tailley):
             for x in range(self.taillex):
-                txt += str(self.getGrid()[y][x])
+                txt += str(self.getGrid()[y][x].getX()) + str(self.getCellule(y, x).getY())
                 nbespaces = 3 - len(str(self.getGrid()[y][x]))
                 txt += " "*nbespaces
                 txt += "    "
@@ -39,11 +39,40 @@ class Grid():
         self.grille[y][x] = v
 
     def maxX(self):
-        return (len(self.getGrid()[0]) - 1)
+        return (self.taillex - 1)
 
     def maxY(self):
-        return (len(self.getGrid()) - 1)
+        return (self.tailley - 1)
+    
+    def sizeX(self):
+        return (self.taillex)
+    
+    def sizeY(self):
+        return (self.tailley)
+    
+    def addLine(self):
+        self.grille.append([Cellule(Color(7, 0), i, self.tailley) for i in range(self.sizeX())])
+        self.tailley += 1
+        self.searchCloseCells()
 
+    def supLine(self):
+        if (self.sizeY() > 1):
+            self.grille.pop()
+            self.tailley -= 1
+            self.searchCloseCells()
+
+    def addCol(self):
+        for i in range(self.sizeY()):
+            self.grille[i].append(Cellule(Color(7, 0), self.taillex, i))
+        self.taillex += 1
+        self.searchCloseCells()
+
+    def supCol(self):
+        if (self.sizeX() > 1):
+            for i in range(self.sizeY()):
+                self.grille[i].pop()
+            self.taillex -= 1
+            self.searchCloseCells()
 
 class Cellule():
     def __init__(self, couleur, x, y):

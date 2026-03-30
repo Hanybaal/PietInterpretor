@@ -3,11 +3,22 @@
 class Zone():
     def inZone(zone, x, y):
         return (zone.getX() < x < zone.getEndX() and zone.getY() < y < zone.getEndY())
+
+    def getZoneByName(zone, name):
+        if (zone.getName() == name):
+            return zone
+
+        for z in zone.getUnderZones():
+            if (Zone.getZoneByName(z, name) != None):
+                return Zone.getZoneByName(z, name)
+
+        return None
     
-    def __init__(self, origin, size, color = "red"):
+    def __init__(self, origin, size, color = "red", name = "default"):
         self.origin = origin
         self.size = size
         self.color = color
+        self.name = name
         self.graphicZone = None
         self.underZones = []
 
@@ -52,6 +63,15 @@ class Zone():
     def getColor(self):
         return self.color
 
+    def getName(self):
+        return self.name
+
+    def getUnderZones(self):
+        return self.underZones
+
+    def hasNameSet(self):
+        return (self.getName() != "default")
+
     def creaZone(self, can, tags = "zone"):
         self.graphicZone = can.create_rectangle(self.getX(), self.getY(),
                              self.getEndX(), self.getEndY(),
@@ -60,8 +80,8 @@ class Zone():
 
 
 class TouchableZone(Zone):
-    def __init__(self, origin, size, color = "red", command = None, action = None, tags = ""):
-        super().__init__(origin, size, color)
+    def __init__(self, origin, size, color = "red", command = None, action = None, tags = "", name = ""):
+        super().__init__(origin, size, color, name)
         self.command = command
         self.action = action
         self.tags = tags
